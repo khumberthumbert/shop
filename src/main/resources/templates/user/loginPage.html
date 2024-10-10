@@ -22,7 +22,7 @@
 </div>
 <script>
     async function login(event) {
-        event.preventDefault(); // form의 기본 동작을 방지
+        event.preventDefault();
 
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
@@ -37,14 +37,17 @@
 
         if (response.ok) {
             const data = await response.json();
-            localStorage.setItem('token', data.token);  // JWT 토큰을 저장
-            console.log('로그인 성공');
-            // 메인 페이지로 리디렉션
-            window.location.href = "/";
+            data.accessToken = undefined;
+            data.refreshToken = undefined;
+            // Access Token과 Refresh Token을 localStorage에 저장
+            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken);  // Refresh Token 저장
+            window.location.href = "/";  // 메인 페이지로 이동
         } else {
-            console.alert('로그인 실패');
+            alert('로그인 실패');
         }
     }
+
 </script>
 </body>
 </html>

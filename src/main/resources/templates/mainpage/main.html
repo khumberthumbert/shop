@@ -284,40 +284,86 @@
 <!-- Core theme JS-->
 <script src="js/scripts.js"></script>
 <script>
+    // Access Token 및 Refresh Token을 관리하는 fetchWithAuth 함수 추가
+    async function fetchWithAuth(url, options = {}) {
+        let accessToken = localStorage.getItem('accessToken');
+        const refreshToken = localStorage.getItem('refreshToken');
+
+        // Access Token을 사용하여 요청
+        let response = await fetch(url, {
+            ...options,
+            headers: {
+                ...options.headers,
+                'Authorization': `Bearer ${accessToken}`
+            }
+        });
+
+        // Access Token이 만료되어 401 Unauthorized 응답이 반환되면, Refresh Token을 사용해 새로운 Access Token 발급 시도
+        if (response.status === 401 && refreshToken) {
+            // Refresh Token으로 새로운 Access Token 요청
+            const refreshResponse = await fetch('/api/auth/refresh', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ refreshToken })
+            });
+
+            if (refreshResponse.ok) {
+                const data = await refreshResponse.json();
+                localStorage.setItem('accessToken', data.accessToken); // 새로운 Access Token 저장
+
+                // 새로운 Access Token을 이용해 원래 요청을 다시 시도
+                response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        ...options.headers,
+                        'Authorization': `Bearer ${data.accessToken}`
+                    }
+                });
+            } else {
+                alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+                window.location.href = "/loginPage";
+            }
+        }
+
+        return response;
+    }
+
     document.addEventListener("DOMContentLoaded", async () => {
-        const token = localStorage.getItem('token'); // 저장된 JWT 토큰을 가져옴
+        const token = localStorage.getItem('accessToken'); // 저장된 Access Token을 가져옴
+        const isBuilt = localStorage.getItem('isBuilt');
 
         // 빌드 후 처음 실행할 때 토큰을 삭제
         if (!isBuilt) {
             console.log('빌드 후 토큰을 삭제합니다');
-            localStorage.removeItem('token');
+            localStorage.removeItem('accessToken');
             localStorage.setItem('isBuilt', 'true');  // 플래그 설정
             return;
         }
 
         if (token) {
-            const response = await fetch('/api/auth/check', {
+            // 로그인 상태 확인 API 요청을 fetchWithAuth로 호출
+            const response = await fetchWithAuth('/api/auth/check', {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });
 
             if (response.ok) {
                 console.log('로그인 상태 유지됨');
-            }
-            /*    else {
-                    console.log('로그인 상태가 아닙니다');
-                    window.location.href = "/loginPage"; // 로그인이 안되어 있다면 로그인 페이지로 이동
-                }
             } else {
-                // 토큰이 없을 경우 로그인 페이지로 이동
-                window.location.href = "/loginPage";
-            }*/
+                console.log('로그인 상태가 아닙니다');
+                //window.location.href = "/loginPage"; // 로그인이 안되어 있다면 로그인 페이지로 이동
+            }
+
+        } else {
+            console.log('토큰이 없습니다.')
+            window.location.href = "/loginPage"; // 토큰이 없을 경우 로그인 페이지로 이동
         }
-    }
-    );
+    });
 </script>
+
 </body>
 </html>

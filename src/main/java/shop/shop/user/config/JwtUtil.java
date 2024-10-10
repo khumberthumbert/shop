@@ -25,6 +25,16 @@ public class JwtUtil {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    // Refresh Token 생성 메서드 추가
+    public String generateRefreshToken(String username) {
+        return Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7)) // 7일간 유효한 Refresh Token
+                .signWith(secretKey)
+                .compact();
+    }
+
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
@@ -45,7 +55,7 @@ public class JwtUtil {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))  // 10시간 유효
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 15))  // 15분 유효한 Access Token
                 .signWith(secretKey)
                 .compact();
     }

@@ -32,13 +32,33 @@ public class AuthController {
         );
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getUsername());
-        final String jwt = jwtUtil.generateToken(userDetails.getUsername());
+        final String accessToken = jwtUtil.generateToken(userDetails.getUsername());
+        final String refreshToken = jwtUtil.generateRefreshToken(userDetails.getUsername()); // Refresh Token 생성
 
-        // JWT 토큰을 JSON 형태로 반환
+        // Access Token과 Refresh Token을 JSON 형태로 반환
         Map<String, String> response = new HashMap<>();
-        response.put("token", jwt);
+        response.put("accessToken", accessToken);
+        response.put("refreshToken", refreshToken); // 클라이언트에 Refresh Token 제공
 
         return response;
+    }
+
+    // Refresh Token을 통한 Access Token 재발급
+    @PostMapping("/api/auth/refresh")
+    @ResponseBody
+    public Map<String, String> refreshAccessToken(@RequestBody Map<String, String> request) {
+        String refreshToken = request.get("refreshToken");
+        String username = jwtUtil.extractUsername(refreshToken); // Refresh Token에서 사용자명 추출
+
+        // Refresh Token 검증
+        if (jwtUtil.validateToken(refreshToken, userDetailsService.loadUserByUsername(username))) {
+            String newAccessToken = jwtUtil.generateToken(username); // 새로운 Access Token 발급
+            Map<String, String> response = new HashMap<>();
+            response.put("accessToken", newAccessToken);
+            return response;
+        } else {
+            throw new RuntimeException("Invalid Refresh Token");
+        }
     }
 
     @GetMapping("/api/auth/check")
