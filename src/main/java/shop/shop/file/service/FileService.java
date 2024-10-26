@@ -14,4 +14,6 @@ public interface FileService {
     FileMetadata getFileMetadata(Long id);
 
     void deleteFile(Long id);
+
+    FileMetadata getFileMetadataByFileName(String fileName);
 }

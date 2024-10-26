@@ -4,13 +4,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "users")
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
 
     @Id
@@ -24,7 +26,7 @@ public class User {
     private String password;
 
     @Column(nullable = false)
-    private String role; // "ADMIN", "USER" 등 역할
+    private String roles; // "ADMIN", "USER" 등 역할
 
 }
 

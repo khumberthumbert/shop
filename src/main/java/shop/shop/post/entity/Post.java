@@ -3,8 +3,11 @@ package shop.shop.post.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import shop.shop.file.entity.FileMetadata;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "posts")
@@ -30,6 +33,9 @@ public class Post {
 
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FileMetadata> fileMetadataList = new ArrayList<>(); // 여러 개의 첨부파일을 가질 수 있도록 설정
 
     @PrePersist
     protected void onCreate() {

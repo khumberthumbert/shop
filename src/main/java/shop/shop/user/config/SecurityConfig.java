@@ -30,10 +30,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable) // CSRF 비활성화
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**", "/api/users/**","/mainpage/**", "/", "/css/**", "/js/**").permitAll()  // 로그인 및 회원가입 API는 누구나 접근 가능
-                        .requestMatchers("/loginPage", "/user/**").permitAll()
+                        .requestMatchers("/loginPage", "/user/**", "/api/posts/page").permitAll()
+                        .requestMatchers("/api/posts/**").authenticated()
                         .anyRequest().authenticated())  // 나머지 요청은 인증 필요
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))  // 세션을 사용하지 않음 (JWT를 사용하므로)
@@ -51,4 +53,6 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+
 }

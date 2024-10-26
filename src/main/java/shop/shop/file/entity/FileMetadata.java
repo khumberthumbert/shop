@@ -2,6 +2,7 @@ package shop.shop.file.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import shop.shop.post.entity.Post;
 
 import java.time.LocalDateTime;
 
@@ -29,5 +30,9 @@ public class FileMetadata {
 
     @Column(name = "upload_time", nullable = false)
     private LocalDateTime uploadTime = LocalDateTime.now();
+
+    @ManyToOne
+    @JoinColumn(name = "post_id")
+    private Post post; // 파일이 속한 게시글 설정
 
 }
