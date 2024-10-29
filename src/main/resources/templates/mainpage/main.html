@@ -12,6 +12,9 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css" rel="stylesheet" />
     <!-- Core theme CSS (includes Bootstrap)-->
     <link href="css/styles.css" rel="stylesheet" />
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <link rel="shortcut icon" href="">
+    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
 </head>
 <body>
 <!-- Navigation-->
@@ -52,7 +55,7 @@
                         </button>
                     </form>
                 </div>
-                <form th:action="@{/loginPage}" method="get">
+                <form th:action="@{/loginPage}" method="get" >
                     <button class="btn btn-outline-dark d-flex align-items-center" type="submit">
                         <i class="bi-person me-1"></i>
                         Login
@@ -73,7 +76,7 @@
     </div>
 </header>
 <!-- Section-->
-<section class="py-5">
+<section class="py-5" id="mainunder">
     <div class="container px-4 px-lg-5 mt-5">
         <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
             <div class="col mb-5">
@@ -279,100 +282,12 @@
 <footer class="py-5 bg-dark">
     <div class="container"><p class="m-0 text-center text-white">Copyright &copy; Your Website 2023</p></div>
 </footer>
-<!-- common.js 파일을 포함 -->
-<script src="/js/common.js"></script>
+
 <!-- Bootstrap core JS-->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 <!-- Core theme JS-->
 <script src="js/scripts.js"></script>
-<script>
-    // Access Token 및 Refresh Token을 관리하는 fetchWithAuth 함수 추가
-    async function fetchWithAuth(url, options = {}) {
-        let accessToken = localStorage.getItem('accessToken');
-        const refreshToken = localStorage.getItem('refreshToken');
-
-        console.log('Access Token:', accessToken);
-
-        // 헤더에 Access Token 추가
-        options.headers = {
-            ...options.headers,
-            'Authorization': `Bearer ${accessToken}`
-        };
-
-        console.log('Authorization 헤더1:', options.headers.Authorization); // 헤더가 설정된 후에 로그
-
-        // Access Token을 사용하여 요청
-        let response = await fetch(url, options);
-
-        // 401 응답이 있을 때, Refresh Token을 사용하여 새로운 Access Token 발급
-        if (response.status === 401 && refreshToken) {
-            console.warn('Access Token이 만료되었습니다. 새로운 토큰을 요청합니다.');
-
-            // Refresh Token으로 새로운 Access Token 요청
-            const refreshResponse = await fetch('/api/auth/refresh', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ refreshToken })
-            });
-
-            if (refreshResponse.ok) {
-                const data = await refreshResponse.json();
-                localStorage.setItem('accessToken', data.accessToken); // 새로운 Access Token 저장
-
-                // 업데이트된 Access Token으로 다시 헤더 설정
-                options.headers['Authorization'] = `Bearer ${data.accessToken}`;
-
-                console.log('새로운 Authorization 헤더:', options.headers.Authorization);
-
-                // 새로운 Access Token을 이용해 원래 요청을 다시 시도
-                response = await fetch(url, options);
-            } else {
-                alert('세션이 만료되었습니다. 다시 로그인해주세요.');
-                window.location.href = "/loginPage";
-            }
-        }
-
-        return response;
-    }
-
-
-    document.addEventListener("DOMContentLoaded", async () => {
-        const token = localStorage.getItem('accessToken'); // 저장된 Access Token을 가져옴
-        console.log(token + " 토큰 진짜 나오나?")
-        const isBuilt = localStorage.getItem('isBuilt');
-
-        /*// 빌드 후 처음 실행할 때 토큰을 삭제
-        if (!isBuilt) {
-            console.log('빌드 후 토큰을 삭제합니다');
-            localStorage.removeItem('accessToken');
-            localStorage.setItem('isBuilt', 'true');  // 플래그 설정
-            return;
-        }
-*/
-        if (token) {
-            // 로그인 상태 확인 API 요청을 fetchWithAuth로 호출
-            const response = await fetchWithAuth('/api/auth/check', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                console.log('로그인 상태 유지됨');
-            } else {
-                console.log('로그인 상태가 아닙니다');
-                //window.location.href = "/loginPage"; // 로그인이 안되어 있다면 로그인 페이지로 이동
-            }
-
-        } else {
-            console.log('토큰이 없습니다.')
-            window.location.href = "/loginPage"; // 토큰이 없을 경우 로그인 페이지로 이동
-        }
-    });
-</script>
-
+<!-- common.js 파일을 포함 -->
+<script src="/js/common.js"></script>
 </body>
 </html>

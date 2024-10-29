@@ -52,7 +52,7 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/", "/join", "/login", "css/**", "mainpage/**").permitAll()
+                        .requestMatchers("/", "/join", "/login", "css/**", "mainpage/**", "js/**", "/favicon.ico").permitAll()
                         .requestMatchers("/loginPage").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
