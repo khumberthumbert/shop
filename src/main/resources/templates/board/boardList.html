@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:sec="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<!-- templates/board/boardList.html -->
+<div th:fragment="boardListFragment">
+    <div class="container">
+        <h2>게시글 목록</h2>
+        <div id="board-list">
+            <div th:each="board : ${boardPage.content}">
+                <h3 th:text="${board.title}">제목</h3>
+                <p th:text="${board.content}">내용</p>
+                <p>작성자: <span th:text="${board.user}"></span></p>
+                <p>최종 수정 시간: <span th:text="${board.displayedTime}"></span></p>
+                <hr>
+            </div>
+        </div>
+        <div>
+            <button th:if="${boardPage.hasPrevious()}" onclick="fetchBoardPage(${boardPage.number - 1})">이전</button>
+            <button th:if="${boardPage.hasNext()}" onclick="fetchBoardPage(${boardPage.number + 1})">다음</button>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

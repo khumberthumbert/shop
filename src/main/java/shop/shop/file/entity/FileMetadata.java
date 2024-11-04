@@ -2,7 +2,7 @@ package shop.shop.file.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import shop.shop.post.entity.Post;
+import shop.shop.board.entity.Board;
 
 import java.time.LocalDateTime;
 
@@ -33,6 +33,6 @@ public class FileMetadata {
 
     @ManyToOne
     @JoinColumn(name = "post_id")
-    private Post post; // 파일이 속한 게시글 설정
+    private Board post; // 파일이 속한 게시글 설정
 
 }

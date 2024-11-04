@@ -1,5 +1,6 @@
 package shop.shop;
 
+import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -10,13 +11,14 @@ import java.util.Collection;
 import java.util.Iterator;
 
 @Controller
+@Log4j2
 public class HomeController {
 
     @GetMapping("/")
     public String home(){
 
         String name = SecurityContextHolder.getContext().getAuthentication().getName();
-        System.out.println(name);
+        log.info("사용자 이름 : {}", name);
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -25,7 +27,7 @@ public class HomeController {
         GrantedAuthority auth = iter.next();
         String role = auth.getAuthority();
 
-        System.out.println(role);
+        log.info("사용자 role : {}", role);
 
         return "mainpage/main";
     }

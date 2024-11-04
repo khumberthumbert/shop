@@ -30,7 +30,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
         //Authorization 헤더 검증
         if (authorization == null || !authorization.startsWith("Bearer ")) {
-
+            log.info("Authorization header missing or does not start with 'Bearer '");
             log.info("token null");
             filterChain.doFilter(request, response);
 
@@ -44,7 +44,7 @@ public class JWTFilter extends OncePerRequestFilter {
         try {
             jwtUtil.isExpired(token);
         } catch (ExpiredJwtException e) {
-
+            log.error("Token expired: {}", e.getMessage());
             System.out.println("token expired");
 
             filterChain.doFilter(request, response);
@@ -68,6 +68,10 @@ public class JWTFilter extends OncePerRequestFilter {
         Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
         //세션에 사용자 등록
         SecurityContextHolder.getContext().setAuthentication(authToken);
+        log.info("Extracted username from token: {}", username);
+        log.info("Extracted role from token: {}", role);
+        log.info("Authentication object in SecurityContext: {}", SecurityContextHolder.getContext().getAuthentication());
+
 
         filterChain.doFilter(request, response);
     }
