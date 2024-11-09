@@ -37,10 +37,7 @@ function loadLoginForm() {
             console.log("Received data:", data); // 받은 데이터 확인
 
             // 기존 콘텐츠를 숨기기
-            const mainContent = document.querySelector("#mainunder");
-            if (mainContent) {
-                mainContent.style.display = "none"; // 기존 콘텐츠 숨기기
-            }
+            noneTag();
 
             // 새로운 폼 요소를 생성
             const formContainer = document.createElement("div");
@@ -187,11 +184,79 @@ function loadPosts() {
         })
         .then(html => {
             // 가져온 HTML 프래그먼트를 DOM에 삽입
-            const boardContainer = document.querySelector("#board-list-container"); // 프래그먼트를 삽입할 대상
+            noneTag(); // Hide other sections
+            const boardContainer = document.querySelector("#main-in-the-section"); // 프래그먼트를 삽입할 대상
             boardContainer.innerHTML = html;
             console.log("Board fragment loaded successfully.");
         })
         .catch(error => console.error("게시물 요청 실패:", error));
 }
+
+function noneTag() {
+    // 기존 콘텐츠를 숨기기
+    const mainContent = document.querySelector("#main-in-the-section");
+    if (mainContent) {
+        mainContent.innerHTML = "";
+    }
+}
+
+//글 쓰기 폼 불러오기
+function loadWriteFragment() {
+    fetchWithToken("/board/writeFragment")
+        .then(response => {
+            console.log("Response status:", response.status);
+            if (!response.ok) {
+                throw new Error("Failed to load fragment");
+            }
+            return response.text();
+        })
+        .then(html => {
+            noneTag(); // 기존 콘텐츠 숨기기
+
+            const mainContent = document.getElementById("main-in-the-section");
+            if (!mainContent) {
+                console.error("main-in-the-section element not found.");
+                return;
+            }
+
+            mainContent.innerHTML = html; // HTML 삽입
+            console.log("Fragment loaded successfully");
+        })
+        .catch(error => console.error("Error loading fragment:", error));
+}
+
+//글 쓰기
+function submitForm() {
+    const form = document.getElementById('boardForm');
+    const formData = {
+        title: form.title.value,
+        content: form.content.value
+    };
+
+    fetchWithToken('/boards/save', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + localStorage.getItem('token') // 인증 토큰 추가
+        },
+        body: JSON.stringify(formData)
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to submit the form');
+            }
+            return response.json();
+        })
+        .then(data => {
+            //alert('게시글이 성공적으로 저장되었습니다. ID: ' + data);
+            loadPosts();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('게시글 저장에 실패했습니다.');
+        });
+}
+
+
 
 

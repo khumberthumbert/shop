@@ -14,7 +14,7 @@ async function fetchBoardPage(page) {
             const doc = parser.parseFromString(html, "text/html");
 
             const boardListContent = doc.querySelector("div[th\\:fragment='boardListFragment']").innerHTML;
-            document.getElementById("mainunder").innerHTML = boardListContent;
+            document.getElementById("boardContent").innerHTML = boardListContent;
         } else {
             console.error("Failed to load board page");
         }
@@ -22,3 +22,4 @@ async function fetchBoardPage(page) {
         console.error("Error fetching board page:", error);
     }
 }
+
