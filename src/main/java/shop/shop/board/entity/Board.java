@@ -35,7 +35,7 @@ public class Board{
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FileMetadata> fileMetadataList = new ArrayList<>(); // 여러 개의 첨부파일을 가질 수 있도록 설정
 
     @ManyToOne(fetch = FetchType.LAZY)

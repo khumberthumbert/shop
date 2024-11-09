@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,9 +34,27 @@ public class FileServiceImpl implements FileService {
     }
 
     @Override
+    public List<FileMetadata> uploadFiles(List<MultipartFile> files) {
+        List<FileMetadata> fileMetadataList = new ArrayList<>();
+        for (MultipartFile file : files) {
+            try {
+                // 개별 파일 저장
+                String fileName = saveFileToServer(file);
+                FileMetadata metadata = saveFileMetadata(file, fileName);  // 메타데이터 저장
+                fileMetadataList.add(metadata);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to upload file: " + file.getOriginalFilename(), e);
+            }
+        }
+        return fileMetadataList;
+    }
+
+
+    @Override
     public List<FileMetadata> listAllFiles() {
         return fileMetadataRepository.findAll();
     }
+
 
     @Override
     public FileMetadata getFileMetadata(Long id) {
@@ -67,13 +86,14 @@ public class FileServiceImpl implements FileService {
     }
 
     // 파일 메타데이터 저장
-    private void saveFileMetadata(MultipartFile file, String fileName) {
+    private FileMetadata saveFileMetadata(MultipartFile file, String fileName) {
         FileMetadata metadata = new FileMetadata();
         metadata.setFileName(fileName);
         metadata.setFileType(file.getContentType());
         metadata.setFileSize(file.getSize());
         metadata.setFilePath(uploadDir + File.separator + fileName);
         fileMetadataRepository.save(metadata);
+        return metadata;
     }
 
     // 서버에서 파일 삭제

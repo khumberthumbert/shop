@@ -33,6 +33,6 @@ public class FileMetadata {
 
     @ManyToOne
     @JoinColumn(name = "post_id")
-    private Board post; // 파일이 속한 게시글 설정
+    private Board board; // 파일이 속한 게시글 설정
 
 }

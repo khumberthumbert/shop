@@ -155,6 +155,7 @@ document.addEventListener("DOMContentLoaded", function() {
         .catch(error => console.error("홈페이지 요청 실패:", error));
 });
 
+//게시글 전체 조회
 function loadPosts() {
     fetchWithToken("/api/posts/page")
         .then(response => {
@@ -225,38 +226,90 @@ function loadWriteFragment() {
         .catch(error => console.error("Error loading fragment:", error));
 }
 
-//글 쓰기
+// 게시글 쓰기
 function submitForm() {
     const form = document.getElementById('boardForm');
-    const formData = {
+    const formData = new FormData();
+
+    // 게시글 데이터(JSON) 추가
+    const board = {
         title: form.title.value,
         content: form.content.value
     };
+    formData.append("board", new Blob([JSON.stringify(board)], { type: "application/json" }));
 
+    // 첨부파일 추가
+    const files = form.files.files;
+    for (let i = 0; i < files.length; i++) {
+        formData.append('files', files[i]);
+    }
+
+    // 요청 전송
     fetchWithToken('/boards/save', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + localStorage.getItem('token') // 인증 토큰 추가
-        },
-        body: JSON.stringify(formData)
+        body: formData,
     })
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to submit the form');
+
+            if (response.ok) {
+                alert('게시글이 성공적으로 작성되었습니다.');
+                console.log(response)
+                //window.location.href = '/boards'; // 게시글 목록 페이지로 이동
+                loadPosts()
+            } else {
+                return response.json().then(err => { throw new Error(err.message); });
             }
-            return response.json();
-        })
-        .then(data => {
-            //alert('게시글이 성공적으로 저장되었습니다. ID: ' + data);
-            loadPosts();
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('게시글 저장에 실패했습니다.');
+            alert('게시글 작성 중 오류가 발생했습니다: ' + error.message);
         });
 }
 
+function fetchBoardDetail(boardId) {
+    console.log(`Fetching details for board ID: ${boardId}`);
 
+    // REST API 호출
+    fetch(`/boards/${boardId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`, // JWT 토큰 추가
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json(); // JSON 응답 파싱
+        })
+        .then(data => {
+            console.log('Board details:', data);
+            displayBoardDetail(data); // 상세 정보 표시 함수 호출
+        })
+        .catch(error => {
+            console.error('Error fetching board details:', error);
+            alert('게시글 조회 중 오류가 발생했습니다.');
+        });
+}
+
+function displayBoardDetail(board) {
+    // 상세 정보를 표시할 컨테이너를 선택하거나 생성
+    const detailContainer = document.getElementById('board-detail-container');
+    if (!detailContainer) {
+        console.error('Board detail container not found!');
+        return;
+    }
+
+    // 상세 정보 표시
+    detailContainer.innerHTML = `
+        <h2>${board.title}</h2>
+        <p>${board.content}</p>
+        <p><strong>작성자:</strong> ${board.user}</p>
+        <p><strong>작성일:</strong> ${board.displayedTime}</p>
+    `;
+
+    // 컨테이너를 보이게 설정
+    detailContainer.style.display = 'block';
+}
 
 

@@ -21,7 +21,7 @@ import shop.shop.jwt.LoginFilter;
 import java.util.Collections;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -83,7 +83,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/", "/join", "/login", "css/**", "mainpage/**", "js/**", "/favicon.ico").permitAll()
                         .requestMatchers("/loginPage").permitAll()
-                        .requestMatchers("/admin", "/api/**", "/board/writeFragment", "/boards/save").hasRole("ADMIN")
+                        .requestMatchers("/admin", "/api/**", "/board/writeFragment", "/boards/save", "/boards/update/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                         .exceptionHandling((exceptions) -> exceptions
                                 .authenticationEntryPoint(customAuthenticationEntryPoint)

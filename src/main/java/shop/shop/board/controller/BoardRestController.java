@@ -8,6 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import shop.shop.board.dto.BoardDto;
 import shop.shop.board.service.BoardServiceImpl;
 import shop.shop.user.repository.UserRepository;
@@ -23,24 +24,28 @@ public class BoardRestController {
     private final UserRepository userRepository;
 
     //게시글 등록
-    @PreAuthorize("isAuthenticated()")
     @PostMapping("/save")
-    public ResponseEntity<Integer> saveBoard(@RequestBody BoardDto boardDto) {
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Integer> saveBoard(@RequestPart("board") BoardDto boardDto,
+                                             @RequestPart(value = "files", required = false) List<MultipartFile> files) {
         // 현재 로그인된 사용자 ID 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName(); // 사용자 이름 (주로 username 또는 email)
-        int userId = userRepository.findUserIdByUsername(username); // 사용자의 ID를 가져오는 서비스 호출
+        String username = authentication.getName(); // 사용자 이름
+        int userId = userRepository.findUserIdByUsername(username);
 
         // 게시글 저장
-        int boardId = boardService.saveBoard(userId, boardDto);
+        int boardId = boardService.saveBoard(userId, boardDto, files);
         return ResponseEntity.ok(boardId);
     }
 
     // 게시글 수정
-    @PreAuthorize("isAuthenticated()")
     @PostMapping("/update/{boardId}")
-    public ResponseEntity<Integer> updateBoard(@PathVariable int boardId, @RequestBody BoardDto boardDto) {
-        int updatedBoardId = boardService.updateBoard(boardId, boardDto);
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Integer> updateBoard(@PathVariable int boardId,
+                                               @RequestPart("board") BoardDto boardDto,
+                                               @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+        // 게시글 수정
+        int updatedBoardId = boardService.updateBoard(boardId, boardDto, files);
         return ResponseEntity.ok(updatedBoardId);
     }
 
@@ -59,12 +64,12 @@ public class BoardRestController {
         return ResponseEntity.ok(boardDto);
     }
 
-    // 게시글 전체 조회
+    /*// 게시글 전체 조회
     @GetMapping("/all")
     public ResponseEntity<List<BoardDto>> findAllPost() {
         List<BoardDto> boardDtos = boardService.findAllPost();
         return ResponseEntity.ok(boardDtos);
-    }
+    }*/
 
     // 게시글 전체 조회(페이징)
     @GetMapping("/page")

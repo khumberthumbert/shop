@@ -10,6 +10,7 @@ public interface FileService {
     String uploadFile(MultipartFile file) throws IOException;
 
     List<FileMetadata> listAllFiles();
+    List<FileMetadata> uploadFiles(List<MultipartFile> files);
 
     FileMetadata getFileMetadata(Long id);
 
