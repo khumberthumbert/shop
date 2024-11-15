@@ -1,6 +1,7 @@
 package shop.shop.board.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/boards")
 @RequiredArgsConstructor
+@Log4j2
 public class BoardRestController {
 
     private final BoardServiceImpl boardService;
@@ -41,11 +43,18 @@ public class BoardRestController {
     // 게시글 수정
     @PostMapping("/update/{boardId}")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<Integer> updateBoard(@PathVariable int boardId,
-                                               @RequestPart("board") BoardDto boardDto,
-                                               @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+    public ResponseEntity<Integer> updateBoard(
+            @PathVariable int boardId,
+            @ModelAttribute BoardDto boardDto,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files,
+            @RequestParam(value = "deleteFileIds", required = false) List<Long> deleteFileIds) {
+
+        log.info("수정할 Board ID: {}", boardId);
+        log.info("수정할 Board DTO: {}", boardDto);
+        log.info("수정할 게시글의 Files: {}", files);
+
         // 게시글 수정
-        int updatedBoardId = boardService.updateBoard(boardId, boardDto, files);
+        int updatedBoardId = boardService.updateBoard(boardId, boardDto, files, deleteFileIds);
         return ResponseEntity.ok(updatedBoardId);
     }
 
@@ -61,7 +70,7 @@ public class BoardRestController {
     @GetMapping("/{boardId}")
     public ResponseEntity<BoardDto> findBoardById(@PathVariable int boardId) {
         BoardDto boardDto = boardService.findBoardById(boardId);
-        return ResponseEntity.ok(boardDto);
+        return ResponseEntity.ok(boardDto); //JSON 응답으로 반환.
     }
 
     /*// 게시글 전체 조회

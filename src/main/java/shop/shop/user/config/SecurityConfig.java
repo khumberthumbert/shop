@@ -81,9 +81,9 @@ public class SecurityConfig {
         //경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/", "/join", "/login", "css/**", "mainpage/**", "js/**", "/favicon.ico").permitAll()
+                        .requestMatchers("/", "/join", "/login", "css/**", "mainpage/**", "js/**", "/favicon.ico", "/uploads/**").permitAll()
                         .requestMatchers("/loginPage").permitAll()
-                        .requestMatchers("/admin", "/api/**", "/board/writeFragment", "/boards/save", "/boards/update/**").hasRole("ADMIN")
+                        .requestMatchers("/admin", "/api/**", "/board/writeFragment", "/boards/save", "/boards/update/**", "/update/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                         .exceptionHandling((exceptions) -> exceptions
                                 .authenticationEntryPoint(customAuthenticationEntryPoint)

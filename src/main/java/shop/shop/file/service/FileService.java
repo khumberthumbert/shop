@@ -1,6 +1,7 @@
 package shop.shop.file.service;
 
 import org.springframework.web.multipart.MultipartFile;
+import shop.shop.file.dto.FileMetadataDto;
 import shop.shop.file.entity.FileMetadata;
 
 import java.io.IOException;
@@ -10,7 +11,7 @@ public interface FileService {
     String uploadFile(MultipartFile file) throws IOException;
 
     List<FileMetadata> listAllFiles();
-    List<FileMetadata> uploadFiles(List<MultipartFile> files);
+    List<FileMetadataDto> uploadFiles(List<MultipartFile> files);
 
     FileMetadata getFileMetadata(Long id);
 

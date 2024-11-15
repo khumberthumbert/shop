@@ -1,6 +1,7 @@
 package shop.shop.board.dto;
 
 import lombok.*;
+import shop.shop.file.dto.FileMetadataDto;
 import shop.shop.user.entity.UserEntity;
 
 import java.time.LocalDateTime;
@@ -17,14 +18,16 @@ public class BoardDto {
     private String content;
     private String user;
     private LocalDateTime displayedTime;
+    private List<FileMetadataDto> fileMetadataList;
 
     @Builder
-    public BoardDto(int id, String title, String content, String user, LocalDateTime displayedTime) {
+    public BoardDto(int id, String title, String content, String user, LocalDateTime displayedTime, List<FileMetadataDto> fileMetadataList) {
         this.id = id;
         this.title = title;
         this.content = content;
         this.user = user;
         this.displayedTime = displayedTime;
+        this.fileMetadataList = fileMetadataList;
 
     }
 

@@ -35,7 +35,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
 	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
-	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'  // JWT용 JSON 직렬화/역직렬화 라이브러리
+	implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+    implementation 'org.testng:testng:7.1.0'// JWT용 JSON 직렬화/역직렬화 라이브러리
 
 
 
