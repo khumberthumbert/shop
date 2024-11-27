@@ -374,8 +374,7 @@ function loadExistingAttachments(attachments) {
         return;
     }
 
-    // 삭제된 파일을 추적하기 위한 배열
-    const deletedFileIds = [];
+    const deletedFileIds = []; // 삭제된 파일 ID를 추적할 배열
 
     attachments.forEach(attachment => {
         const previewDiv = document.createElement("div");
@@ -385,12 +384,11 @@ function loadExistingAttachments(attachments) {
         previewDiv.style.margin = "10px";
 
         const img = document.createElement("img");
-        img.src = attachment.fileUrl;
-        img.alt = attachment.id; // 서버에 저장된 파일 ID를 alt 속성으로 사용
+        img.src = attachment.fileUrl; // 파일 URL
+        img.alt = attachment.id;     // 파일 ID를 alt 속성에 저장
         img.style.maxWidth = "150px";
         img.style.marginBottom = "10px";
 
-        // "X" 버튼 생성
         const removeButton = document.createElement("button");
         removeButton.innerText = "X";
         removeButton.style.position = "absolute";
@@ -404,8 +402,8 @@ function loadExistingAttachments(attachments) {
         // 삭제 버튼 클릭 이벤트
         removeButton.onclick = function () {
             previewDiv.remove(); // 화면에서 제거
-            deletedFileIds.push(attachment.id); // 삭제할 파일 ID 추가
-            console.log("Deleted file ID:", attachment.id);
+            deletedFileIds.push(parseInt(img.alt, 10)); // 삭제할 파일 ID 추가
+            console.log("Deleted file ID:", img.alt); // 로그 출력
         };
 
         previewDiv.appendChild(img);
@@ -413,9 +411,10 @@ function loadExistingAttachments(attachments) {
         previewContainer.appendChild(previewDiv);
     });
 
-    // 삭제된 파일 ID를 반환하는 클로저 함수 추가
-    return deletedFileIds;
+    // 삭제된 파일 ID를 전역적으로 추적
+    window.deletedFileIds = deletedFileIds;
 }
+
 
 
 // 수정 시 저장 버튼
@@ -427,20 +426,11 @@ function submitEditForm(boardId) {
     formData.append("content", document.getElementById("content").value);
 
     // 삭제된 파일 ID 추가
-    const previewContainer = document.getElementById("previewContainer");
-    const deletedFileIds = [];
-
-    if (previewContainer) {
-        previewContainer.querySelectorAll(".preview-item").forEach(previewDiv => {
-            const img = previewDiv.querySelector("img");
-            if (img && img.getAttribute("data-deleted") === "true") {
-                deletedFileIds.push(img.alt); // ID를 추가
-            }
-        });
-    }
-
-    if (deletedFileIds.length > 0) {
-        formData.append("deletedFileIds", JSON.stringify(deletedFileIds));
+    if (window.deletedFileIds && window.deletedFileIds.length > 0) {
+        console.log("삭제된 파일 IDs:", window.deletedFileIds); // 로그 확인
+        formData.append("deleteFileIds", JSON.stringify(window.deletedFileIds));
+    } else {
+        console.log("삭제된 파일 없음");
     }
 
     // 새로 추가된 첨부파일 처리
@@ -471,3 +461,5 @@ function submitEditForm(boardId) {
             console.error("Error updating board:", error);
         });
 }
+
+

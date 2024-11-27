@@ -83,7 +83,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/", "/join", "/login", "css/**", "mainpage/**", "js/**", "/favicon.ico", "/uploads/**").permitAll()
                         .requestMatchers("/loginPage").permitAll()
-                        .requestMatchers("/admin", "/api/**", "/board/writeFragment", "/boards/save", "/boards/update/**", "/update/**").hasRole("ADMIN")
+                        .requestMatchers("/admin", "/api/**", "/board/writeFragment", "/boards/save", "/boards/update/**", "/update/**", "/boards/update/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                         .exceptionHandling((exceptions) -> exceptions
                                 .authenticationEntryPoint(customAuthenticationEntryPoint)

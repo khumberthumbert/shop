@@ -83,8 +83,13 @@ public class BoardServiceImpl {
         if (deleteFileIds != null && !deleteFileIds.isEmpty()) {
             deleteFileIds.forEach(fileId -> {
                 FileMetadata fileMetadata = fileService.getFileMetadata(fileId);
-                board.getFileMetadataList().remove(fileMetadata);
-                fileService.deleteFile(fileId); // 실제 파일 삭제
+                if (fileMetadata != null) {
+                    // 실제 파일 삭제
+                    fileService.deleteFile(fileId);
+                    log.info("파일 삭제 완료: {}", fileMetadata.getFileName());
+                    // Board 엔티티의 첨부파일 리스트에서 제거
+                    board.getFileMetadataList().remove(fileMetadata);
+                }
             });
         }
 
@@ -108,9 +113,10 @@ public class BoardServiceImpl {
 
             board.getFileMetadataList().addAll(fileMetadataList);
         }
-
+        log.info("게시글 수정 완료. 게시글 ID: {}", boardId);
         return board.getId();
     }
+
 
 
     // 게시글 삭제
@@ -128,6 +134,7 @@ public class BoardServiceImpl {
                 .map(file -> {
                     System.out.println("Original filePath from DB: " + file.getFilePath());
                     return FileMetadataDto.builder()
+                            .id(file.getId())
                             .fileName(file.getFileName())
                             .fileType(file.getFileType())
                             .fileSize(file.getFileSize())

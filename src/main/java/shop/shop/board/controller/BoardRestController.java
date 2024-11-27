@@ -1,5 +1,8 @@
 package shop.shop.board.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
@@ -14,6 +17,7 @@ import shop.shop.board.dto.BoardDto;
 import shop.shop.board.service.BoardServiceImpl;
 import shop.shop.user.repository.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -40,23 +44,34 @@ public class BoardRestController {
         return ResponseEntity.ok(boardId);
     }
 
-    // 게시글 수정
     @PostMapping("/update/{boardId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Integer> updateBoard(
             @PathVariable int boardId,
             @ModelAttribute BoardDto boardDto,
             @RequestPart(value = "files", required = false) List<MultipartFile> files,
-            @RequestParam(value = "deleteFileIds", required = false) List<Long> deleteFileIds) {
+            @RequestParam(value = "deleteFileIds", required = false) String deleteFileIdsJson) {
+
+        // deleteFileIds JSON 문자열을 List<Long>로 변환
+        List<Long> deleteFileIds = new ArrayList<>();
+        if (deleteFileIdsJson != null && !deleteFileIdsJson.isEmpty()) {
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                deleteFileIds = objectMapper.readValue(deleteFileIdsJson, new TypeReference<List<Long>>() {});
+            } catch (JsonProcessingException e) {
+                log.error("Failed to parse deleteFileIds JSON", e);
+            }
+        }
 
         log.info("수정할 Board ID: {}", boardId);
         log.info("수정할 Board DTO: {}", boardDto);
-        log.info("수정할 게시글의 Files: {}", files);
+        log.info("수정할 삭제 파일 ID 리스트: {}", deleteFileIds);
 
         // 게시글 수정
         int updatedBoardId = boardService.updateBoard(boardId, boardDto, files, deleteFileIds);
         return ResponseEntity.ok(updatedBoardId);
     }
+
 
     // 게시글 삭제
     @PreAuthorize("isAuthenticated()")
@@ -72,13 +87,6 @@ public class BoardRestController {
         BoardDto boardDto = boardService.findBoardById(boardId);
         return ResponseEntity.ok(boardDto); //JSON 응답으로 반환.
     }
-
-    /*// 게시글 전체 조회
-    @GetMapping("/all")
-    public ResponseEntity<List<BoardDto>> findAllPost() {
-        List<BoardDto> boardDtos = boardService.findAllPost();
-        return ResponseEntity.ok(boardDtos);
-    }*/
 
     // 게시글 전체 조회(페이징)
     @GetMapping("/page")

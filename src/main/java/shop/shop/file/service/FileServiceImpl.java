@@ -75,9 +75,15 @@ public class FileServiceImpl implements FileService {
     public void deleteFile(Long id) {
         FileMetadata fileMetadata = fileMetadataRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("File not found with ID: " + id));
-        deleteFileFromServer(fileMetadata.getFilePath());
+
+        // 서버 파일 삭제
+        String fullPath = uploadDir + File.separator + fileMetadata.getFilePath();
+        deleteFileFromServer(fullPath);
+
+        // DB에서 메타데이터 삭제
         fileMetadataRepository.delete(fileMetadata);
     }
+
 
     @Override
     public FileMetadata getFileMetadataByFileName(String fileName) {
@@ -110,12 +116,15 @@ public class FileServiceImpl implements FileService {
         return metadata;
     }
 
-
-    // 서버에서 파일 삭제
-    private void deleteFileFromServer(String filePath) {
+    // 서버에서 파일 삭제 메서드 수정
+    public void deleteFileFromServer(String filePath) {
         File file = new File(filePath);
-        if (file.exists() && !file.delete()) {
-            throw new RuntimeException("Failed to delete file: " + filePath);
+        if (file.exists()) {
+            if (!file.delete()) {
+                throw new RuntimeException("Failed to delete file: " + filePath);
+            }
+        } else {
+            throw new RuntimeException("File not found on server: " + filePath);
         }
     }
 }

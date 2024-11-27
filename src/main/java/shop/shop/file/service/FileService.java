@@ -18,4 +18,6 @@ public interface FileService {
     void deleteFile(Long id);
 
     FileMetadata getFileMetadataByFileName(String fileName);
+
+    public void deleteFileFromServer(String filePath);
 }
