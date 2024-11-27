@@ -23,7 +23,7 @@ async function fetchBoardPage(page) {
     }
 }
 
-//게시글 전체 조회
+// 게시글 전체 조회
 function loadPosts() {
     fetchWithToken("/api/posts/page")
         .then(response => {
@@ -69,7 +69,7 @@ function noneTag() {
     }
 }
 
-//글 쓰기 폼 불러오기
+// 글 쓰기 폼 불러오기
 function loadWriteFragment() {
     fetchWithToken("/board/writeFragment")
         .then(response => {
@@ -121,9 +121,8 @@ function submitForm() {
 
             if (response.ok) {
                 alert('게시글이 성공적으로 작성되었습니다.');
-                console.log(response)
-                //window.location.href = '/boards'; // 게시글 목록 페이지로 이동
-                loadPosts()
+                console.log(response);
+                loadPosts();
             } else {
                 return response.json().then(err => { throw new Error(err.message); });
             }
@@ -158,10 +157,8 @@ function fetchBoardDetail(boardId) {
         });
 }
 
-
 function displayBoardDetail(board) {
     // 게시글 목록 컨테이너와 상세 보기 컨테이너 가져오기
-    const boardListContainer = document.getElementById('board-list-container');
     const detailContainer = document.getElementById('board-detail-container');
 
     if (!detailContainer) {
@@ -216,7 +213,6 @@ function displayBoardDetail(board) {
     detailContainer.style.display = 'block';
 }
 
-
 function goBackToList() {
     // 게시글 목록 컨테이너와 상세 보기 컨테이너 가져오기
     const mainInTheSection = document.getElementById('main-in-the-section');
@@ -229,11 +225,10 @@ function goBackToList() {
     mainInTheSection.style.display = 'block';
 }
 
-//수정하기 폼 생성
+// 수정하기 폼 생성
 function showEditForm(boardId) {
     console.log(`Editing board ID: ${boardId}`);
 
-    // REST API 호출로 기존 게시글 데이터 가져오기
     fetch(`/boards/${boardId}`, {
         method: 'GET',
         headers: {
@@ -249,13 +244,32 @@ function showEditForm(boardId) {
         })
         .then(data => {
             console.log('Editing board:', data);
-            // 수정 폼을 렌더링 (기존 데이터를 폼에 채움)
+
+            // 수정 폼 렌더링
             renderEditForm(data);
+
+            // 수정 폼 DOM 요소가 렌더링된 이후에 데이터 바인딩
+            const titleInput = document.getElementById('title');
+            const contentInput = document.getElementById('content');
+
+            if (!titleInput || !contentInput) {
+                console.error('Title or content input field not found in DOM.');
+                return;
+            }
+
+            titleInput.value = data.title;
+            contentInput.value = data.content;
+
+            // 기존 첨부파일 로드
+            if (data.fileMetadataList) {
+                loadExistingAttachments(data.fileMetadataList);
+            }
         })
         .catch(error => {
             console.error('Error fetching board data for editing:', error);
         });
 }
+
 // 수정할 게시글 데이터를 폼에 렌더링
 function renderEditForm(board) {
     const detailContainer = document.getElementById('board-detail-container');
@@ -265,13 +279,16 @@ function renderEditForm(board) {
         <h2>게시글 수정</h2>
         <form id="editForm">
             <label for="title">제목</label>
-            <input type="text" id="title" name="title" value="${board.title}" required>
+            <input type="text" id="title" name="title" required>
 
             <label for="content">내용</label>
-            <textarea id="content" name="content" required>${board.content}</textarea>
+            <textarea id="content" name="content" required></textarea>
 
             <label for="files">첨부파일 추가</label>
-            <input type="file" id="files" name="files" multiple>
+            <input type="file" id="files" name="files" multiple onchange="previewSelectedFiles(event)">
+
+            <!-- 미리보기 컨테이너 추가 -->
+            <div id="previewContainer" style="margin-top: 20px;"></div>
 
             <div style="margin-top: 20px;">
                 <button type="button" onclick="submitEditForm(${board.id})">저장</button>
@@ -281,24 +298,162 @@ function renderEditForm(board) {
     `;
 }
 
+// 첨부파일 미리보기 및 제거 기능
+function previewSelectedFiles(event) {
+    const files = event.target.files;
+    const previewContainer = document.getElementById("previewContainer");
+
+    if (!files || files.length === 0) {
+        console.warn("No files selected for preview.");
+        return;
+    }
+
+    if (!previewContainer) {
+        console.error("Preview container not found in DOM.");
+        return;
+    }
+
+    // 기존 미리보기 초기화
+    previewContainer.innerHTML = "";
+
+    Array.from(files).forEach((file, index) => {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            // 미리보기 이미지 컨테이너 생성
+            const previewDiv = document.createElement("div");
+            previewDiv.classList.add("preview-item");
+            previewDiv.style.position = "relative";
+            previewDiv.style.display = "inline-block";
+            previewDiv.style.margin = "10px";
+
+            const img = document.createElement("img");
+            img.src = e.target.result;
+            img.alt = file.name;
+            img.style.maxWidth = "150px";
+            img.style.marginBottom = "10px";
+
+            // "X" 버튼 생성
+            const removeButton = document.createElement("button");
+            removeButton.innerText = "X";
+            removeButton.style.position = "absolute";
+            removeButton.style.top = "5px";
+            removeButton.style.right = "5px";
+            removeButton.style.background = "red";
+            removeButton.style.color = "white";
+            removeButton.style.border = "none";
+            removeButton.style.cursor = "pointer";
+
+            removeButton.onclick = function () {
+                // 선택된 파일 제거
+                previewDiv.remove();
+                const dataTransfer = new DataTransfer();
+                Array.from(files).forEach((f, i) => {
+                    if (i !== index) {
+                        dataTransfer.items.add(f);
+                    }
+                });
+                document.getElementById("files").files = dataTransfer.files;
+            };
+
+            previewDiv.appendChild(img);
+            previewDiv.appendChild(removeButton);
+            previewContainer.appendChild(previewDiv);
+        };
+
+        reader.readAsDataURL(file);
+    });
+}
+
+// 게시글 수정 시 기존 첨부파일 로드 및 관리
+function loadExistingAttachments(attachments) {
+    const previewContainer = document.getElementById("previewContainer");
+
+    if (!previewContainer) {
+        console.error("Preview container not found in DOM.");
+        return;
+    }
+
+    // 삭제된 파일을 추적하기 위한 배열
+    const deletedFileIds = [];
+
+    attachments.forEach(attachment => {
+        const previewDiv = document.createElement("div");
+        previewDiv.classList.add("preview-item");
+        previewDiv.style.position = "relative";
+        previewDiv.style.display = "inline-block";
+        previewDiv.style.margin = "10px";
+
+        const img = document.createElement("img");
+        img.src = attachment.fileUrl;
+        img.alt = attachment.id; // 서버에 저장된 파일 ID를 alt 속성으로 사용
+        img.style.maxWidth = "150px";
+        img.style.marginBottom = "10px";
+
+        // "X" 버튼 생성
+        const removeButton = document.createElement("button");
+        removeButton.innerText = "X";
+        removeButton.style.position = "absolute";
+        removeButton.style.top = "5px";
+        removeButton.style.right = "5px";
+        removeButton.style.background = "red";
+        removeButton.style.color = "white";
+        removeButton.style.border = "none";
+        removeButton.style.cursor = "pointer";
+
+        // 삭제 버튼 클릭 이벤트
+        removeButton.onclick = function () {
+            previewDiv.remove(); // 화면에서 제거
+            deletedFileIds.push(attachment.id); // 삭제할 파일 ID 추가
+            console.log("Deleted file ID:", attachment.id);
+        };
+
+        previewDiv.appendChild(img);
+        previewDiv.appendChild(removeButton);
+        previewContainer.appendChild(previewDiv);
+    });
+
+    // 삭제된 파일 ID를 반환하는 클로저 함수 추가
+    return deletedFileIds;
+}
+
+
+// 수정 시 저장 버튼
 function submitEditForm(boardId) {
     const formData = new FormData();
 
     // 게시글 정보 추가
-    formData.append('title', document.getElementById('title').value);
-    formData.append('content', document.getElementById('content').value);
+    formData.append("title", document.getElementById("title").value);
+    formData.append("content", document.getElementById("content").value);
 
-    // 첨부파일 추가
-    const files = document.getElementById('files').files;
-    for (let i = 0; i < files.length; i++) {
-        formData.append('files', files[i]);
+    // 삭제된 파일 ID 추가
+    const previewContainer = document.getElementById("previewContainer");
+    const deletedFileIds = [];
+
+    if (previewContainer) {
+        previewContainer.querySelectorAll(".preview-item").forEach(previewDiv => {
+            const img = previewDiv.querySelector("img");
+            if (img && img.getAttribute("data-deleted") === "true") {
+                deletedFileIds.push(img.alt); // ID를 추가
+            }
+        });
     }
 
-    // 요청 보내기
+    if (deletedFileIds.length > 0) {
+        formData.append("deletedFileIds", JSON.stringify(deletedFileIds));
+    }
+
+    // 새로 추가된 첨부파일 처리
+    const files = document.getElementById("files").files;
+    for (let i = 0; i < files.length; i++) {
+        formData.append("files", files[i]);
+    }
+
+    // 요청 전송
     fetch(`/boards/update/${boardId}`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
+            "Authorization": `Bearer ${localStorage.getItem("token")}`
         },
         body: formData
     })
@@ -309,12 +464,10 @@ function submitEditForm(boardId) {
             return response.json();
         })
         .then(data => {
-            console.log('Board updated successfully:', data);
-            goBackToList();
+            console.log("Board updated successfully:", data);
+            goBackToList(); // 수정 완료 후 목록으로 이동
         })
         .catch(error => {
-            console.error('Error updating board:', error);
+            console.error("Error updating board:", error);
         });
 }
-
-

@@ -3,6 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title>글쓰기</title>
+    <style>
+        .preview-container img {
+            max-width: 150px;
+            margin: 10px;
+        }
+        .preview-container p {
+            margin: 5px 0;
+        }
+    </style>
 </head>
 <body>
 <div th:fragment="boardWriteFragment">
@@ -19,7 +28,11 @@
             </tr>
             <tr>
                 <td><label for="files">첨부파일:</label></td>
-                <td><input type="file" id="files" name="files" multiple></td>
+                <td>
+                    <input type="file" id="files" name="files" multiple onchange="previewSelectedFiles(event)">
+                    <!-- 미리보기 컨테이너 -->
+                    <div id="previewContainer" class="preview-container"></div>
+                </td>
             </tr>
             <tr>
                 <td colspan="2" style="text-align: right;">
@@ -29,5 +42,9 @@
         </table>
     </form>
 </div>
+
+<script>
+
+</script>
 </body>
 </html>
