@@ -1,42 +1,58 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:sec="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>게시글 목록</title>
 </head>
 <body>
 <!-- templates/board/boardList.html -->
 <div id="board-list-container">
 
-<div th:fragment="boardListFragment">
-    <div>
-        <h2>게시글 목록</h2>
-
-        <!-- 글쓰기 버튼 -->
-        <div style="text-align: right; margin-bottom: 10px;">
-            <button class="write-button" id="writeButton" type="button" onclick="loadWriteFragment()" >글쓰기</button>
-        </div>
-
-        <!-- 게시글 리스트 -->
-        <div class="boardListContainer" id="board-list">
-            <div th:each="board : ${boardPage.content}"  class="board-item" th:onclick="'fetchBoardDetail(' + ${board.id} + ')'">
-                <p style="display: none" th:attr="data-board-id=${board.id}"></p>
-                <h3 th:text="${board.title}">제목</h3>
-                <p th:text="${board.content}">내용</p>
-                <p>작성자: <span th:text="${board.user}"></span></p>
-                <p>최종 수정 시간: <span th:text="${board.displayedTime}"></span></p>
-                <hr>
-            </div>
+    <div th:fragment="boardListFragment">
         <div>
-            <button th:if="${boardPage.hasPrevious()}" onclick="fetchBoardPage(${boardPage.number - 1})">이전</button>
-            <button th:if="${boardPage.hasNext()}" onclick="fetchBoardPage(${boardPage.number + 1})">다음</button>
-        </div>
+            <h2>Product List</h2>
+
+            <!-- 글쓰기 버튼 -->
+            <div style="text-align: right; margin-bottom: 10px;" sec:authorize="isAuthenticated()">
+                <button class="write-button" id="writeButton" type="button" onclick="loadWriteFragment()">Board Write</button>
+            </div>
+
+            <!-- 게시글 리스트 -->
+            <div class="boardListContainer" id="board-list">
+                <!-- 게시글 데이터를 Thymeleaf로 렌더링 -->
+                <div th:each="board : ${boardPage.content}" class="board-item" th:onclick="'fetchBoardDetail(' + ${board.id} + ')'">
+                    <p style="display: none" th:attr="data-board-id=${board.id}"></p>
+                    <h3 th:text="${board.title}">Title</h3>
+                    <p th:text="${board.content}">Content</p>
+                    <p>Writer: <span th:text="${board.user}"></span></p>
+                    <p>Time: <span th:text="${board.displayedTime}"></span></p>
+                    <hr>
+                </div>
+            </div>
+
+            <!-- 페이징 버튼 -->
+            <div id="pagination" style="text-align: center; margin-top: 20px;">
+                <!-- 이전 버튼 -->
+                <button id="prev-button" th:attr="disabled=${boardPage.first}"
+                        th:onclick="'fetchBoardPage(' + (${boardPage.number - 1}) + ')'"><</button>
+
+                <!-- 현재 페이지 정보 -->
+                <span>
+                Current Page: <span id="current-page" th:text="${boardPage.number + 1}"></span> /
+                <span id="total-pages" th:text="${boardPage.totalPages}"></span>
+            </span>
+
+                <!-- 다음 버튼 -->
+                <button id="next-button" th:attr="disabled=${boardPage.last}"
+                        th:onclick="'fetchBoardPage(' + (${boardPage.number + 1}) + ')'">></button>
+            </div>
+
+
         </div>
     </div>
 
 </div>
-</div>
-<script src="/js/board.js"> </script>
+<script src="/js/board.js"></script>
 <script src="/js/common.js"></script>
 </body>
 </html>

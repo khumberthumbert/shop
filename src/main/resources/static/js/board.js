@@ -1,30 +1,101 @@
 document.addEventListener("DOMContentLoaded", () => {
-    document.querySelector("#board-button").addEventListener("click", (event) => {
+    // 게시판 버튼 클릭 시 첫 페이지 로드
+    document.querySelector("#boardButton").addEventListener("click", (event) => {
         event.preventDefault();
-        fetchBoardPage(0); // 첫 페이지를 기본으로 로드
+        fetchBoardPage(0); // 첫 페이지 로드
     });
 });
 
+// 게시글 목록과 페이징 데이터를 가져오는 함수
 async function fetchBoardPage(page) {
     try {
-        const response = await fetch(`/api/posts/page?page=${page}`);
-        if (response.ok) {
-            const html = await response.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, "text/html");
+        const response = await fetch(`/api/posts/page?page=${page}`, {
+            headers: {
+                "Accept": "application/json", // JSON 응답을 요청
+            },
+        });
 
-            const boardListContent = doc.querySelector("div[th\\:fragment='boardListFragment']").innerHTML;
-            document.getElementById("boardContent").innerHTML = boardListContent;
-        } else {
-            console.error("Failed to load board page");
+        if (!response.ok) {
+            throw new Error(`Failed to fetch page: ${response.status}`);
         }
+
+        const data = await response.json(); // JSON 응답 파싱
+        renderBoardList(data.content); // 게시글 목록 렌더링
+        updatePaginationButtons(data); // 페이징 버튼 상태 업데이트
     } catch (error) {
         console.error("Error fetching board page:", error);
     }
 }
 
+
+// 게시글 목록 렌더링
+function renderBoardList(boards) {
+    const container = document.getElementById("board-list");
+    container.innerHTML = ""; // 기존 내용 제거
+
+    if (boards.length === 0) {
+        container.innerHTML = "<p>There's no post</p>";
+        return;
+    }
+
+    boards.forEach((board) => {
+        const boardItem = document.createElement("div");
+        boardItem.classList.add("board-item");
+        boardItem.innerHTML = `
+            <h3>${board.title}</h3>
+            <p>${board.content}</p>
+            <p>Writer: ${board.user}</p>
+            <p>Time: ${board.displayedTime}</p>
+            <hr>
+        `;
+        boardItem.onclick = () => fetchBoardDetail(board.id); // 게시글 상세보기로 이동
+        container.appendChild(boardItem);
+    });
+}
+
+// 페이징 버튼 상태 업데이트
+function updatePaginationButtons(data) {
+    const prevButton = document.getElementById("prev-button");
+    const nextButton = document.getElementById("next-button");
+
+    // 이전 버튼 업데이트
+    if (prevButton) {
+        if (data.first) {
+            prevButton.disabled = true; // 첫 페이지에서는 비활성화
+        } else {
+            prevButton.disabled = false; // 첫 페이지가 아니면 활성화
+            prevButton.onclick = () => fetchBoardPage(data.number - 1);
+        }
+    }
+
+    // 다음 버튼 업데이트
+    if (nextButton) {
+        if (data.last) {
+            nextButton.disabled = true; // 마지막 페이지에서는 비활성화
+        } else {
+            nextButton.disabled = false; // 마지막 페이지가 아니면 활성화
+            nextButton.onclick = () => fetchBoardPage(data.number + 1);
+        }
+    }
+
+    // 현재 페이지 정보 업데이트
+    const currentPageElement = document.getElementById("current-page");
+    const totalPagesElement = document.getElementById("total-pages");
+
+    if (currentPageElement) {
+        currentPageElement.textContent = `${data.number + 1}`;
+    }
+    if (totalPagesElement) {
+        totalPagesElement.textContent = `${data.totalPages}`;
+    }
+}
+
+
+
+
 // 게시글 전체 조회
 function loadPosts() {
+    noneTag();
     fetchWithToken("/api/posts/page")
         .then(response => {
             console.log("Status Code:", response.status);
@@ -182,7 +253,7 @@ function displayBoardDetail(board) {
                 console.warn("Invalid file metadata:", file);
                 return `<p>파일 정보가 올바르지 않습니다.</p>`;
             }
-
+            console.log("File type:", file.fileType);
             // 이미지 파일만 미리보기로 표시
             if (file.fileType.startsWith('image/')) {
                 return `<img src="${file.fileUrl}" alt="${file.fileName}" style="max-width: 100%; height: auto; margin-bottom: 10px;">`;
@@ -198,20 +269,64 @@ function displayBoardDetail(board) {
     detailContainer.innerHTML = `
         <h2>${board.title}</h2>
         <p>${board.content}</p>
-        <p><strong>작성자:</strong> ${board.user}</p>
-        <p><strong>작성일:</strong> ${board.displayedTime}</p>
+        <p><strong>Writer:</strong> ${board.user}</p>
+        <p><strong>Time:</strong> ${board.displayedTime}</p>
         ${attachmentsHtml}
         <div style="margin-top: 20px;">
-            <button onclick="goBackToList()">목록으로</button>
+            <button onclick="goBackToList()">Go List </button>
         </div>
         <div>
             <button onclick="showEditForm(${board.id})">Update</button>
+        </div>
+        <div>
+            <button onclick="deleteBoard(${board.id})">Delete</button>
         </div>
     `;
 
     // 상세 보기 컨테이너 보이기
     detailContainer.style.display = 'block';
 }
+//게시글 삭제.
+function deleteBoard(boardId) {
+    if (!confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
+        return;
+    }
+
+    fetch(`/boards/delete/${boardId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.message); });
+            }
+            return response;
+        })
+        .then(() => {
+            alert('Board deleted');
+            removePostFromDom(boardId);
+            goBackToList(); // 게시글 목록 다시 로드
+            loadPosts();
+        })
+        .catch(error => {
+            console.error('Error deleting board:', error);
+            alert('Error deleting board: ' + error.message);
+        });
+}
+
+function removePostFromDom(boardId) {
+    const postElement = document.querySelector(`#post-${boardId}`);
+    if (postElement) {
+        postElement.remove(); // 삭제된 게시글을 DOM에서 제거
+        console.log(`Post with ID ${boardId} removed from DOM.`);
+    } else {
+        console.warn(`Post with ID ${boardId} not found in DOM.`);
+    }
+}
+
+
 
 function goBackToList() {
     // 게시글 목록 컨테이너와 상세 보기 컨테이너 가져오기
@@ -276,23 +391,23 @@ function renderEditForm(board) {
 
     // 수정 폼 렌더링
     detailContainer.innerHTML = `
-        <h2>게시글 수정</h2>
+        <h2>Board Update</h2>
         <form id="editForm">
-            <label for="title">제목</label>
+            <label for="title">Title</label>
             <input type="text" id="title" name="title" required>
 
-            <label for="content">내용</label>
+            <label for="content">Content</label>
             <textarea id="content" name="content" required></textarea>
 
-            <label for="files">첨부파일 추가</label>
+            <label for="files">Add Files</label>
             <input type="file" id="files" name="files" multiple onchange="previewSelectedFiles(event)">
 
             <!-- 미리보기 컨테이너 추가 -->
             <div id="previewContainer" style="margin-top: 20px;"></div>
 
             <div style="margin-top: 20px;">
-                <button type="button" onclick="submitEditForm(${board.id})">저장</button>
-                <button type="button" onclick="goBackToList()">취소</button>
+                <button type="button" onclick="submitEditForm(${board.id})">Save</button>
+                <button type="button" onclick="goBackToList()">Cancel</button>
             </div>
         </form>
     `;

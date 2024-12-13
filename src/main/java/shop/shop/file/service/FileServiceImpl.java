@@ -77,7 +77,7 @@ public class FileServiceImpl implements FileService {
                 .orElseThrow(() -> new RuntimeException("File not found with ID: " + id));
 
         // 서버 파일 삭제
-        String fullPath = uploadDir + File.separator + fileMetadata.getFilePath();
+        String fullPath = uploadDir + File.separator + fileMetadata.getFileName();
         deleteFileFromServer(fullPath);
 
         // DB에서 메타데이터 삭제
@@ -94,37 +94,43 @@ public class FileServiceImpl implements FileService {
     // 서버에 파일 저장
     private String saveFileToServer(MultipartFile file) throws IOException {
         String extension = FilenameUtils.getExtension(file.getOriginalFilename());
-        String fileName = UUID.randomUUID().toString() + "." + extension; // 유니크 파일 이름 생성
+        String fileName = UUID.randomUUID().toString() + "." + extension; // 고유 파일명 생성
+
+        // 파일 저장 경로 (서버의 절대 경로)
         Path filePath = Paths.get(uploadDir + File.separator + fileName);
         Files.copy(file.getInputStream(), filePath);
 
-        // HTTP URL 반환 (정적 리소스 경로와 매핑)
-        return "/uploads/" + fileName;
+        // 반환 경로 (URL)
+        return fileName; // 절대 경로가 아닌 파일 이름만 반환
     }
+
 
     private FileMetadata saveFileMetadata(MultipartFile file, String fileName) {
         FileMetadata metadata = new FileMetadata();
         metadata.setFileName(fileName);
         metadata.setFileType(file.getContentType());
         metadata.setFileSize(file.getSize());
-
-        // 중복 경로가 추가되는지 디버깅
-        System.out.println("File Path being saved: " + fileName);
-
-        metadata.setFilePath(fileName); // HTTP URL 경로 저장
+        //metadata.setFilePath(uploadDir + File.separator + fileName); // 절대 경로 저장
+        // 절대 경로 대신 HTTP URL 경로 저장
+        metadata.setFilePath("/uploads/" + fileName);
         fileMetadataRepository.save(metadata);
         return metadata;
     }
 
+
     // 서버에서 파일 삭제 메서드 수정
     public void deleteFileFromServer(String filePath) {
-        File file = new File(filePath);
-        if (file.exists()) {
-            if (!file.delete()) {
-                throw new RuntimeException("Failed to delete file: " + filePath);
+        try {
+            // 파일 저장 경로로 변환
+            Path absolutePath = Paths.get(filePath);
+            File file = absolutePath.toFile();
+
+            if (file.exists() && !file.delete()) {
+                throw new RuntimeException("Failed to delete file: " + absolutePath);
             }
-        } else {
-            throw new RuntimeException("File not found on server: " + filePath);
+        } catch (Exception e) {
+            throw new RuntimeException("Error while deleting file: " + filePath, e);
         }
     }
+
 }

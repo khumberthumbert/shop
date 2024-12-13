@@ -58,9 +58,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String role = auth.getAuthority();
 
-        String token = jwtUtil.createJwt(username, role, 60 * 60 * 10L);
+        String token = jwtUtil.createJwt(username, role, 7200000L);
+
         log.info("Generated JWT: {}", token);
-        System.out.println(token);
 
         // JSON 형식으로 응답 설정
         response.setContentType("application/json");

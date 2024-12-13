@@ -32,6 +32,7 @@ dependencies {
 	// Apache Commons IO (파일 처리 관련 유틸리티)
 	implementation 'commons-io:commons-io:2.8.0'
 
+	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5:3.0.4.RELEASE'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
 	implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'

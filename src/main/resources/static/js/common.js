@@ -1,30 +1,50 @@
-// 페이지가 로드되면 DOMContentLoaded 이벤트 리스너 등록
 document.addEventListener("DOMContentLoaded", function () {
-    // 로그인 버튼 이벤트 추가
-    const loginButton = document.querySelector('form[action="/loginPage"] button');
-    if (loginButton) {
-        console.log("Login button found!");
-        loginButton.addEventListener("click", function (event) {
-            event.preventDefault();
-            loadLoginForm();
-        });
-    } else {
-        console.log("Login button not found!");
-    }
 
-    // 게시판 버튼 클릭 이벤트 추가
+    loadPosts()
+
     const boardButton = document.getElementById("boardButton");
+    const loginButton = document.querySelector('form[action="/loginPage"] button');
+    const logoutButton = document.getElementById("logoutButton");
+
     if (boardButton) {
         boardButton.addEventListener("click", function (event) {
             event.preventDefault();
             loadPosts(); // 게시글 목록 로드
         });
+    } else {
+        console.error("boardButton not found");
+    }
+
+    if (loginButton) {
+        loginButton.addEventListener("click", function (event) {
+            event.preventDefault();
+            loadLoginForm(); // 로그인 폼 로드
+        });
+    } else {
+        console.error("loginButton not found");
+    }
+
+    if (logoutButton) {
+        logoutButton.addEventListener("click", function (event) {
+            event.preventDefault();
+            logout(); // 로그아웃 처리
+        });
+    } else {
+        console.error("logoutButton not found");
     }
 });
 
-// 로그인 폼을 동적으로 생성 및 삽입
+// 로그인 폼 동적 생성 및 삽입
 function loadLoginForm() {
+    noneTag(); // 기존 콘텐츠 숨기기
     console.log("loadLoginForm called!");
+
+    // 기존 로그인 폼이 있으면 중복 생성 방지
+    const existingFormContainer = document.querySelector(".login-form-container");
+    if (existingFormContainer) {
+        console.log("Login form already rendered.");
+        return;
+    }
 
     fetch("/loginPage")
         .then(response => {
@@ -35,7 +55,6 @@ function loadLoginForm() {
         })
         .then(data => {
             console.log("Received data:", data);
-            noneTag(); // 기존 콘텐츠 숨기기
 
             const formContainer = document.createElement("div");
             formContainer.classList.add("login-form-container");
@@ -44,7 +63,6 @@ function loadLoginForm() {
             form.setAttribute("action", data.formAction);
             form.setAttribute("method", "post");
 
-            // 사용자명 입력 필드
             form.innerHTML = `
                 <div class="mb-3">
                     <input type="text" name="username" placeholder="${data.usernamePlaceholder}" class="form-control" required>
@@ -56,6 +74,7 @@ function loadLoginForm() {
             `;
 
             formContainer.appendChild(form);
+
             const header = document.querySelector("header");
             if (header) {
                 header.insertAdjacentElement("afterend", formContainer);
@@ -77,21 +96,21 @@ function handleLoginSubmit(event) {
         body: formData
     })
         .then(response => {
-            const contentType = response.headers.get("content-type");
-            if (contentType && contentType.includes("application/json")) {
-                return response.json();
-            } else {
-                throw new Error("JSON 응답이 아닙니다.");
+            if (!response.ok) {
+                throw new Error("Login failed");
             }
+            return response.json();
         })
         .then(data => {
             const token = data.token;
             if (token) {
                 localStorage.setItem("token", token); // 토큰 저장
                 console.log("Token stored successfully:", token);
+                //checkLoginStatus(); // 로그인 상태 확인 후 버튼 변경
                 window.location.href = "/"; // 메인 페이지로 리다이렉트
+
             } else {
-                console.error("토큰이 응답에 없습니다.");
+                console.error("No token received.");
             }
         })
         .catch(error => console.error("로그인 요청 중 오류 발생:", error));
@@ -99,6 +118,8 @@ function handleLoginSubmit(event) {
 
 // 게시글 목록 로드
 function loadPosts() {
+    noneTag(); // 기존 콘텐츠 숨기기 (로그인 폼 포함)
+
     fetchWithToken("/api/posts/page")
         .then(response => {
             if (!response.ok) {
@@ -112,7 +133,8 @@ function loadPosts() {
             noneTag();
             const boardContainer = document.querySelector("#main-in-the-section");
             if (boardContainer) {
-                boardContainer.innerHTML = html;
+                boardContainer.innerHTML = html; // 게시글 목록 HTML 삽입
+                boardContainer.style.display = "block"; // 보이기
                 console.log("Board list loaded successfully.");
             } else {
                 console.error("#main-in-the-section element not found.");
@@ -121,11 +143,42 @@ function loadPosts() {
         .catch(error => console.error("게시물 요청 실패:", error));
 }
 
+// 게시판 페이지네이션 로드
+async function fetchBoardPage(page) {
+    console.log("Fetching board page:", page);
+
+    noneTag(); // 기존 콘텐츠 숨기기
+
+    try {
+        const response = await fetch(`/api/posts/page?page=${page}`);
+        if (response.ok) {
+            const html = await response.text();
+            const boardContainer = document.querySelector("#main-in-the-section");
+            if (boardContainer) {
+                boardContainer.innerHTML = html;
+                console.log(`Page ${page} loaded successfully.`);
+            } else {
+                console.error("#main-in-the-section element not found.");
+            }
+        } else {
+            console.error(`Failed to load page ${page}, status: ${response.status}`);
+        }
+    } catch (error) {
+        console.error("Error fetching board page:", error);
+    }
+}
+
 // 기존 콘텐츠 숨기기
 function noneTag() {
     const mainContent = document.querySelector("#main-in-the-section");
+    const loginFormContainer = document.querySelector(".login-form-container");
+
     if (mainContent) {
-        mainContent.innerHTML = ""; // 기존 콘텐츠 초기화
+        mainContent.innerHTML = ""; // 게시글 목록 초기화
+        mainContent.style.display = "none"; // 숨기기
+    }
+    if (loginFormContainer) {
+        loginFormContainer.remove(); // 로그인 폼 제거
     }
 }
 
@@ -141,15 +194,11 @@ function fetchWithToken(url, options = {}) {
     return fetch(url, options);
 }
 
-// 페이지 로드 시 자동으로 메인 페이지 요청
-document.addEventListener("DOMContentLoaded", function() {
-    fetchWithToken("/")
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Authorization failed");
-            }
-            return response.text();
-        })
-        .then(data => console.log("홈페이지 요청 성공:", data))
-        .catch(error => console.error("홈페이지 요청 실패:", error));
-});
+// 로그아웃 함수
+function logout() {
+    // 로컬 스토리지에서 토큰 삭제
+    localStorage.removeItem("token");
+
+    // 로그아웃 후 리다이렉트 (선택사항)
+    window.location.href = "/"; // 로그인 페이지로 리다이렉트
+}

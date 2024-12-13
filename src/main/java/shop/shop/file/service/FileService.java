@@ -19,5 +19,5 @@ public interface FileService {
 
     FileMetadata getFileMetadataByFileName(String fileName);
 
-    public void deleteFileFromServer(String filePath);
+    void deleteFileFromServer(String filePath);
 }

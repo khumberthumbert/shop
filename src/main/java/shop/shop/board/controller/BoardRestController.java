@@ -76,10 +76,12 @@ public class BoardRestController {
     // 게시글 삭제
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/delete/{boardId}")
-    public ResponseEntity<Void> deleteBoard(@PathVariable int boardId) {
-        boardService.deleteBoard(boardId);
+    public ResponseEntity<Void> deleteBoard(@PathVariable int boardId, Authentication authentication) {
+        String username = authentication.getName(); // 현재 로그인한 사용자 이름
+        boardService.deleteBoard(boardId, username); // 수정된 서비스 메서드 호출
         return ResponseEntity.ok().build();
     }
+
 
     // 게시글 단건 조회
     @GetMapping("/{boardId}")

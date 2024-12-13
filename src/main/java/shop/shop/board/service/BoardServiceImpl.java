@@ -81,16 +81,20 @@ public class BoardServiceImpl {
 
         // 기존 첨부파일 삭제 처리
         if (deleteFileIds != null && !deleteFileIds.isEmpty()) {
-            deleteFileIds.forEach(fileId -> {
-                FileMetadata fileMetadata = fileService.getFileMetadata(fileId);
-                if (fileMetadata != null) {
-                    // 실제 파일 삭제
-                    fileService.deleteFile(fileId);
-                    log.info("파일 삭제 완료: {}", fileMetadata.getFileName());
-                    // Board 엔티티의 첨부파일 리스트에서 제거
-                    board.getFileMetadataList().remove(fileMetadata);
+            for (Long fileId : deleteFileIds) {
+                try {
+                    FileMetadata fileMetadata = fileService.getFileMetadata(fileId);
+                    String filePath = fileMetadata.getFilePath();
+
+                    log.info("Attempting to delete file: {}", filePath); // 삭제 시도 로그
+                    board.getFileMetadataList().remove(fileMetadata); // Board의 파일 목록에서 제거
+                    fileService.deleteFile(fileId); // 실제 파일 삭제
+
+                    log.info("Successfully deleted file: {}", filePath); // 삭제 성공 로그
+                } catch (RuntimeException e) {
+                    log.error("Failed to delete file with ID: {}", fileId, e); // 삭제 실패 로그
                 }
-            });
+            }
         }
 
         // 새 첨부파일 추가 처리
@@ -103,7 +107,7 @@ public class BoardServiceImpl {
                         metadata.setFileName(dto.getFileName());
                         metadata.setFileType(dto.getFileType());
                         metadata.setFileSize(dto.getFileSize());
-                        metadata.setFilePath(dto.getFileUrl());
+                        metadata.setFilePath(dto.getFileUrl()); // HTTP URL 저장
                         return metadata;
                     }).toList();
 
@@ -113,17 +117,32 @@ public class BoardServiceImpl {
 
             board.getFileMetadataList().addAll(fileMetadataList);
         }
-        log.info("게시글 수정 완료. 게시글 ID: {}", boardId);
+
         return board.getId();
     }
 
-
-
     // 게시글 삭제
     @Transactional
-    public void deleteBoard(int boardId) {
-        boardRepository.deleteById(boardId);
+    public void deleteBoard(int boardId, String username) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+
+        // 작성자 확인
+        if (!board.getWriter().equals(username)) {
+            throw new SecurityException("게시글 삭제 권한이 없습니다.");
+        }
+
+        // 첨부파일 삭제
+        if (board.getFileMetadataList() != null && !board.getFileMetadataList().isEmpty()) {
+            for (FileMetadata fileMetadata : board.getFileMetadataList()) {
+                fileService.deleteFile(fileMetadata.getId()); // 실제 파일 및 메타데이터 삭제
+            }
+        }
+
+        // 게시글 삭제
+        boardRepository.delete(board);
     }
+
 
     // 게시글 단건 조회
     public BoardDto findBoardById(int boardId) {

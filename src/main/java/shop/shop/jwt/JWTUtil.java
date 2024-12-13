@@ -2,6 +2,8 @@ package shop.shop.jwt;
 
 import io.jsonwebtoken.Jwts;
 import java.util.Date;
+
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -10,6 +12,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 
 @Component
+@Log4j2
 public class JWTUtil {
 
     private SecretKey secretKey;
@@ -41,14 +44,23 @@ public class JWTUtil {
     토큰 생성 메서드
      */
     public String createJwt(String username, String role, Long expiredMs) {
+        // 발행 시간과 만료 시간 계산
+        Date issuedAt = new Date(System.currentTimeMillis());
+        Date expiryDate = new Date(System.currentTimeMillis() + expiredMs);
 
+        // 로그로 출력
+        log.info("JWT Issued At: {}", issuedAt);
+        log.info("JWT Expiry Time: {}", expiryDate);
+
+        // JWT 생성 및 반환
         return Jwts.builder()
                 .claim("username", username)
                 .claim("role", role)
-                .issuedAt(new Date(System.currentTimeMillis())) // 현재 발행 시간
-                .expiration(new Date(System.currentTimeMillis() + expiredMs)) // 언제 소멸될껀지.
+                .issuedAt(issuedAt)
+                .expiration(expiryDate)
                 .signWith(secretKey)
                 .compact();
     }
+
 
 }
