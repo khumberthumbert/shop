@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    loadPosts()
+    checkLoginStatus(); // 로그인 상태 확인 함수 호출
+    loadPosts();
 
     const boardButton = document.getElementById("boardButton");
     const loginButton = document.querySelector('form[action="/loginPage"] button');
@@ -33,6 +34,26 @@ document.addEventListener("DOMContentLoaded", function () {
         console.error("logoutButton not found");
     }
 });
+
+// 로그인 상태 확인 함수
+function checkLoginStatus() {
+    const token = localStorage.getItem("token");
+
+    const loginButton = document.getElementById("loginButton");
+    console.log("로그인 버튼 찍히나? " + loginButton);
+    const logoutButton = document.getElementById("logoutButton");
+    console.log("로그아웃 버튼 찍히나?" + logoutButton)
+
+    if (token) {
+        // 로그인 상태인 경우: 로그인 버튼을 숨기고 로그아웃 버튼을 표시
+        if (loginButton) loginButton.style.display = "none";
+        if (logoutButton) logoutButton.style.display = "block";
+    } else {
+        // 로그아웃 상태인 경우: 로그인 버튼을 표시하고 로그아웃 버튼을 숨김
+        if (loginButton) loginButton.style.display = "block";
+        if (logoutButton) logoutButton.style.display = "none";
+    }
+}
 
 // 로그인 폼 동적 생성 및 삽입
 function loadLoginForm() {
@@ -106,9 +127,8 @@ function handleLoginSubmit(event) {
             if (token) {
                 localStorage.setItem("token", token); // 토큰 저장
                 console.log("Token stored successfully:", token);
-                //checkLoginStatus(); // 로그인 상태 확인 후 버튼 변경
+                checkLoginStatus(); // 로그인 상태 확인 후 버튼 변경
                 window.location.href = "/"; // 메인 페이지로 리다이렉트
-
             } else {
                 console.error("No token received.");
             }
