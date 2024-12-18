@@ -6,6 +6,7 @@ import shop.shop.file.dto.FileMetadataDto;
 import shop.shop.user.entity.UserEntity;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Getter
@@ -33,6 +34,4 @@ public class BoardDto {
         this.fileMetadataList = fileMetadataList;
 
     }
-
-    //private List<FileMetadataDto> fileMetadataList; // 첨부 파일 정보 리스트
 }

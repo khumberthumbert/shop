@@ -15,19 +15,19 @@
 </head>
 <body>
 <div th:fragment="boardWriteFragment">
-    <h2>글쓰기</h2>
+    <h2>Write</h2>
     <form id="boardForm" enctype="multipart/form-data">
         <table>
             <tr>
-                <td><label for="title">제목:</label></td>
+                <td><label for="title">Title:</label></td>
                 <td><input type="text" id="title" name="title" required></td>
             </tr>
             <tr>
-                <td><label for="content">내용:</label></td>
+                <td><label for="content">Content:</label></td>
                 <td><textarea id="content" name="content" required></textarea></td>
             </tr>
             <tr>
-                <td><label for="files">첨부파일:</label></td>
+                <td><label for="files">Files:</label></td>
                 <td>
                     <input type="file" id="files" name="files" multiple onchange="previewSelectedFiles(event)">
                     <!-- 미리보기 컨테이너 -->
@@ -36,7 +36,10 @@
             </tr>
             <tr>
                 <td colspan="2" style="text-align: right;">
-                    <button type="button" onclick="submitForm()">제출</button>
+                    <button type="button" onclick="submitForm()">Save</button>
+                </td>
+                <td colspan="2" style="text-align: right;">
+                    <button type="button" onclick="loadPosts()">Back</button>
                 </td>
             </tr>
         </table>

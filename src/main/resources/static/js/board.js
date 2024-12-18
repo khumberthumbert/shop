@@ -168,12 +168,21 @@ function loadWriteFragment() {
 // 게시글 쓰기
 function submitForm() {
     const form = document.getElementById('boardForm');
+    const title = form.title.value.trim(); // title의 공백 제거
+    const content = form.content.value.trim(); // content의 공백 제거
+
+    // title 또는 content가 비어 있으면 폼을 제출하지 않음
+    if (!title || !content) {
+        alert("Title and content are required.");
+        return; // 함수 종료 (폼 제출 중단)
+    }
+
     const formData = new FormData();
 
     // 게시글 데이터(JSON) 추가
     const board = {
-        title: form.title.value,
-        content: form.content.value
+        title: title,
+        content: content
     };
     formData.append("board", new Blob([JSON.stringify(board)], { type: "application/json" }));
 
@@ -189,7 +198,6 @@ function submitForm() {
         body: formData,
     })
         .then(response => {
-
             if (response.ok) {
                 alert('게시글이 성공적으로 작성되었습니다.');
                 console.log(response);
@@ -202,6 +210,7 @@ function submitForm() {
             alert('게시글 작성 중 오류가 발생했습니다: ' + error.message);
         });
 }
+
 
 function fetchBoardDetail(boardId) {
     console.log(`Fetching details for board ID: ${boardId}`);

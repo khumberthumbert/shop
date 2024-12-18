@@ -23,9 +23,9 @@
                 <div th:each="board : ${boardPage.content}" class="board-item" th:onclick="'fetchBoardDetail(' + ${board.id} + ')'">
                     <p style="display: none" th:attr="data-board-id=${board.id}"></p>
                     <h3 th:text="${board.title}">Title</h3>
-                    <p th:text="${board.content}">Content</p>
+                    <!--<p th:text="${board.content}">Content</p>-->
                     <p>Writer: <span th:text="${board.user}"></span></p>
-                    <p>Time: <span th:text="${board.displayedTime}"></span></p>
+                    <p>Time: <span th:text="${#temporals.format(board.displayedTime, 'yyyy-MM-dd HH:mm')}"></span></p>
                     <hr>
                 </div>
             </div>

@@ -128,7 +128,10 @@ function handleLoginSubmit(event) {
     })
         .then(response => {
             if (!response.ok) {
-                throw new Error("Login failed");
+                // 로그인 실패 시, 서버에서 보내는 오류 메시지를 처리
+                return response.json().then(data => {
+                    throw new Error(data.error || "로그인에 실패했습니다.");
+                });
             }
             return response.json();
         })
@@ -143,7 +146,10 @@ function handleLoginSubmit(event) {
                 console.error("No token received.");
             }
         })
-        .catch(error => console.error("로그인 요청 중 오류 발생:", error));
+        .catch(error => {
+            console.error("로그인 요청 중 오류 발생:", error)
+            alert("Invalid username or password");
+        });
 }
 
 // 게시글 목록 로드

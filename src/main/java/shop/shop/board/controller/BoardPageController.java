@@ -26,16 +26,12 @@ public class BoardPageController {
 
     @GetMapping("/api/posts/page")
     public Object getBoardPage(@RequestHeader(value = "Accept", defaultValue = "text/html") String accept,
-                               Model model, Pageable pageable, CustomUserDetails user)
+                               Model model, Pageable pageable)
     {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Page<BoardDto> boardPage = boardService.findAllPostPage(pageable);
 
-        // 디버깅: 전달받은 데이터 확인
-        boardPage.getContent().forEach(board -> {
-            System.out.println("BoardDto ID: " + board.getId());
-            System.out.println("BoardDto Title: " + board.getTitle());
-        });
+
 
         if (accept.contains("application/json")) {
             // JSON 응답 반환
@@ -44,6 +40,7 @@ public class BoardPageController {
             log.info("user 확인용 {}", authentication.getName());
             model.addAttribute("username", authentication.getName());
             model.addAttribute("boardPage", boardPage);
+
             return "board/boardList :: boardListFragment";
         }
     }
