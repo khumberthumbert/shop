@@ -11,8 +11,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import shop.shop.user.dto.CustomUserDetails;
+import shop.shop.user.entity.UserEntity;
+import shop.shop.user.repository.UserRepository;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -25,6 +28,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
 
+    private final UserRepository userRepository; // DB에서 사용자 정보를 가져오기 위한 repository
+    private final BCryptPasswordEncoder passwordEncoder; // 비밀번호 비교를 위한 PasswordEncoder
+
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
 
@@ -33,6 +39,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String password = obtainPassword(request);
 
         log.info("username 값 출력 : {}", username);
+
+        // DB에서 사용자 정보 확인
+        UserEntity userEntity = userRepository.findByUsername(username);
+
+        if (userEntity == null || !passwordEncoder.matches(password, userEntity.getPassword())) {
+            log.error("Invalid username or password");
+            throw new AuthenticationException("Invalid username or password") {};
+        }
 
         //스프링 시큐리티에서 username과 password를 검증하기 위해서는 token에 담아야 함
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password, null);

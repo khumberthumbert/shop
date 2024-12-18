@@ -1,5 +1,6 @@
 package shop.shop.board.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 import shop.shop.file.dto.FileMetadataDto;
 import shop.shop.user.entity.UserEntity;
@@ -17,6 +18,8 @@ public class BoardDto {
     private String title;
     private String content;
     private String user;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime displayedTime;
     private List<FileMetadataDto> fileMetadataList;
 

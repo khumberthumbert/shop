@@ -172,27 +172,18 @@ public class BoardServiceImpl {
                 .build();
     }
 
-    // 게시글 전체 조회
-    public List<BoardDto> findAllPost() {
-        List<Board> list = boardRepository.findAllPostList();
-        List<BoardDto> boardDtoList = new ArrayList<>();
-        for (Board board : list) {
-            BoardDto boardDto = BoardDto.builder()
-                    .id(board.getId())
-                    .title(board.getTitle())
-                    .content(board.getContent())
-                    .user(board.getUser().getUsername())
-                    .displayedTime(board.getDisplayedTime())
-                    .build();
-            log.info("{} 보드디티오 정보보기 ", boardDto);
-            boardDtoList.add(boardDto);
-        }
-        return boardDtoList;
-    }
-
     // 게시글 전체 조회(페이징)
     public Page<BoardDto> findAllPostPage(Pageable pageable) {
-        Page<Board> boardPages = boardRepository.findAll(PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort()));
+        // Sort 객체를 생성하여 id 기준 내림차순 정렬
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Order.desc("id")) // id 기준 내림차순 정렬
+        );
+
+        // 정렬된 pageable을 사용하여 게시글 조회
+        Page<Board> boardPages = boardRepository.findAll(sortedPageable);
+
         return boardPages.map(
                 board -> BoardDto.builder()
                         .id(board.getId())
@@ -203,6 +194,7 @@ public class BoardServiceImpl {
                         .build()
         );
     }
+
 
     // 회원 게시글 조회(페이징)
     @PreAuthorize("isAuthenticated()")

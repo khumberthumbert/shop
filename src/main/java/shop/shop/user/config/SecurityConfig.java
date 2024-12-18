@@ -17,6 +17,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import shop.shop.jwt.JWTFilter;
 import shop.shop.jwt.JWTUtil;
 import shop.shop.jwt.LoginFilter;
+import shop.shop.user.repository.UserRepository;
 
 import java.util.Collections;
 
@@ -29,6 +30,7 @@ public class SecurityConfig {
     private final JWTUtil jwtUtil;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final UserRepository userRepository;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -91,7 +93,7 @@ public class SecurityConfig {
         http
                 .addFilterAt(new JWTFilter(jwtUtil), LoginFilter.class);
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, userRepository, bCryptPasswordEncoder()), UsernamePasswordAuthenticationFilter.class);
         //세션 설정
         http
                 .sessionManagement((session) -> session

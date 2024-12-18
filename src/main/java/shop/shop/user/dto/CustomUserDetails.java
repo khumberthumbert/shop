@@ -1,6 +1,7 @@
 package shop.shop.user.dto;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import shop.shop.user.entity.UserEntity;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 @RequiredArgsConstructor
+@Log4j2
 public class CustomUserDetails implements UserDetails {
 
     private final UserEntity userEntity;
@@ -22,7 +24,7 @@ public class CustomUserDetails implements UserDetails {
 
             @Override
             public String getAuthority() {
-
+                log.info("userEntity.getRole() 이거 뭐 찍힐까? -> {}",userEntity.getRole());
                 return userEntity.getRole();
             }
         });

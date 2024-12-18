@@ -16,7 +16,7 @@ public interface BoardRepository extends JpaRepository<Board, Integer> {
     @Query("select p from Board p join fetch p.user")
     Page<Board> findALl(Pageable pageable);
 
-    @Query("select p from Board p join fetch p.user")
+    @Query("select p from Board p join fetch p.user order by p.id asc")
     List<Board> findAllPostList();
 
     @Query("select p from Board p join fetch p.user pm where p.id = :id")

@@ -40,9 +40,7 @@ function checkLoginStatus() {
     const token = localStorage.getItem("token");
 
     const loginButton = document.getElementById("loginButton");
-    console.log("로그인 버튼 찍히나? " + loginButton);
     const logoutButton = document.getElementById("logoutButton");
-    console.log("로그아웃 버튼 찍히나?" + logoutButton)
 
     if (token) {
         // 로그인 상태인 경우: 로그인 버튼을 숨기고 로그아웃 버튼을 표시
@@ -53,6 +51,18 @@ function checkLoginStatus() {
         if (loginButton) loginButton.style.display = "block";
         if (logoutButton) logoutButton.style.display = "none";
     }
+}
+
+function checkWriteStatus() {
+    const token = localStorage.getItem("token");
+    const writeButton = document.getElementById("writeButton");
+
+    if(token) {
+        writeButton.style.display ="block";
+    } else {
+        writeButton.style.display = "none";
+    }
+
 }
 
 // 로그인 폼 동적 생성 및 삽입
