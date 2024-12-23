@@ -15,6 +15,116 @@
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <link rel="shortcut icon" href="">
     <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon">
+    <style>
+        body {
+            background-color: #f9f3f3; /* 부드러운 핑크 배경 */
+            color: #d36b8d; /* 차분한 핑크 색상 */
+            font-family: 'Arial', sans-serif;
+        }
+
+        .navbar {
+            background-color: #f7c6d6; /* 부드러운 핑크색 네비게이션 배경 */
+        }
+
+        .navbar .navbar-brand {
+            color: #d36b8d;
+            font-weight: bold;
+        }
+
+        .navbar .navbar-toggler-icon {
+            background-color: #d36b8d;
+        }
+
+        .navbar a {
+            color: #d36b8d;
+        }
+
+        .navbar a:hover {
+            color: #ffb3c1; /* 부드러운 핑크 강조 */
+        }
+
+        .btn-outline-dark {
+            border-color: #f4a5b2; /* 부드러운 핑크색 버튼 테두리 */
+            color: #f4a5b2;
+        }
+
+        .btn-outline-dark:hover {
+            background-color: #f4a5b2;
+            color: white;
+        }
+
+        #boardButton {
+            background-color: #f7b7ca; /* 부드러운 핑크색 버튼 */
+            color: #d36b8d;
+            border: none;
+        }
+
+        #boardButton:hover {
+            background-color: #f4a5b2; /* 강조된 핑크색 */
+            color: white;
+        }
+
+        #loginButton, #logoutButton {
+            background-color: #f4a5b2; /* 부드러운 핑크색 버튼 */
+            color: #d36b8d;
+            border: none;
+            border-radius: 25px; /* 둥근 테두리 */
+            padding: 10px 20px;
+            font-weight: bold;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        #loginButton:hover, #logoutButton:hover {
+            background-color: #f4a5b2; /* 강조된 핑크색 */
+            color: white;
+        }
+
+        .bg-dark {
+            background-color: #f7b7ca !important; /* 부드러운 핑크색 헤더 */
+        }
+
+        .text-white {
+            color: #ffffff !important;
+        }
+
+        .container {
+            background-color: #ffffff; /* 흰 배경 */
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-outline-dark {
+            border-color: #f4a5b2;
+            color: #f4a5b2;
+        }
+
+        .btn-outline-dark:hover {
+            background-color: #f4a5b2;
+            color: white;
+        }
+
+        #boardButton {
+            background-color: #f7b7ca; /* 부드러운 핑크색 버튼 */
+            color: #d36b8d;
+            border: none;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+
+        #boardButton:hover {
+            background-color: #f4a5b2; /* 강조된 핑크색 */
+            color: white;
+        }
+
+        header h1 {
+            color: #f4a5b2; /* 핑크색 텍스트 */
+        }
+
+
+
+    </style>
 </head>
 <body>
 <!-- Navigation-->
@@ -27,13 +137,13 @@
             <div class="d-flex align-items-center justify-content-end">
                 <!-- 로그인된 유저만 Post 버튼을 보도록 설정 -->
                 <div >
-                    <form class="me-2">
+                    <!--<form class="me-2">
                         <button class="btn btn-outline-dark d-flex align-items-center" type="button" id="boardButton">
                             <i class="bi-plus-circle me-1"></i>
-                            <!--<i class="bi-bag-plus me-1"></i>-->
+                            &lt;!&ndash;<i class="bi-bag-plus me-1"></i>&ndash;&gt;
                             Board
                         </button>
-                    </form>
+                    </form>-->
                 </div>
                 <form th:action="@{/loginPage}" method="get" >
                     <button  type="submit" id="loginButton">
@@ -61,7 +171,6 @@
 </header>
 <!-- Section-->
 <section class="py-5" id="mainunder">
-
 
     <div id="board-list-container">
         <!-- 여기에 boardListFragment가 동적으로 삽입됩니다. -->
