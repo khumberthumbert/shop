@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/boards")
 @RequiredArgsConstructor
 @Log4j2
 public class BoardRestController {
@@ -35,7 +34,7 @@ public class BoardRestController {
     private final UserRepository userRepository;
 
     //게시글 등록
-    @PostMapping("/save")
+    @PostMapping("/boards/api/save")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Integer> saveBoard(@RequestPart("board") BoardDto boardDto,
                                              @RequestPart(value = "files", required = false) List<MultipartFile> files) {
@@ -51,7 +50,7 @@ public class BoardRestController {
         return ResponseEntity.ok(boardId);
     }
 
-    @PostMapping("/update/{boardId}")
+    @PostMapping("/boards/update/{boardId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Integer> updateBoard(
             @PathVariable int boardId,
@@ -82,7 +81,7 @@ public class BoardRestController {
 
     // 게시글 삭제
     @PreAuthorize("isAuthenticated()")
-    @DeleteMapping("/delete/{boardId}")
+    @DeleteMapping("/boards/delete/{boardId}")
     public ResponseEntity<Void> deleteBoard(@PathVariable int boardId, Authentication authentication) {
         String username = authentication.getName(); // 현재 로그인한 사용자 이름
         boardService.deleteBoard(boardId, username); // 수정된 서비스 메서드 호출
@@ -91,7 +90,7 @@ public class BoardRestController {
 
 
     // 게시글 단건 조회
-    @GetMapping("/{boardId}")
+    @GetMapping("/get/{boardId}")
     public ResponseEntity<Map<String, Object>> findBoardById(@PathVariable int boardId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         log.info("user 가 잘 뽑힐까요? 봅시다. authentication.getName() : {} \n authentication :{}", authentication.getName(), authentication);
@@ -112,14 +111,14 @@ public class BoardRestController {
     }
 
     // 게시글 전체 조회(페이징)
-    @GetMapping("/page")
+    @GetMapping("/boards/page")
     public ResponseEntity<Page<BoardDto>> findAllPostPage(Pageable pageable) {
         Page<BoardDto> boardDtos = boardService.findAllPostPage(pageable);
         return ResponseEntity.ok(boardDtos);
     }
 
     // 회원 게시글 조회(페이징)
-    @GetMapping("/user/{userId}/page")
+    @GetMapping("/boards/user/{userId}/page")
     public ResponseEntity<Page<BoardDto>> findAllPostPageByUserId(Pageable pageable, @PathVariable int userId) {
         Page<BoardDto> boardDtos = boardService.findAllPostPageById(pageable, userId);
         return ResponseEntity.ok(boardDtos);

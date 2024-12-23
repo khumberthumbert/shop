@@ -1,6 +1,7 @@
 package shop.shop.file.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,6 +16,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class S3ServiceImpl implements FileService {
 
     private final FileMetadataRepository fileMetadataRepository;
@@ -69,8 +71,10 @@ public class S3ServiceImpl implements FileService {
         FileMetadata fileMetadata = fileMetadataRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("File not found with ID: " + id));
 
+        log.info("fileMetadata.getFileName() {}", fileMetadata.getFileName());
         // S3에서 파일 삭제
         s3Service.deleteFileFromS3(fileMetadata.getFileName());
+        log.info("fileMetadata.getFileName() {}", fileMetadata.getFileName());
 
         // DB에서 메타데이터 삭제
         fileMetadataRepository.delete(fileMetadata);

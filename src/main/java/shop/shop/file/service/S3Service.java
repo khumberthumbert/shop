@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 @Service
+@Log4j2
 public class S3Service {
 
     private final AmazonS3 amazonS3;
@@ -47,7 +49,11 @@ public class S3Service {
      * 파일을 S3에서 삭제
      */
     public void deleteFileFromS3(String fileName) {
-        amazonS3.deleteObject(new DeleteObjectRequest(bucket, fileName));
+        String filePath = fileName.replace("https://shopfileserver.s3.ap-northeast-2.amazonaws.com/", "");
+
+        amazonS3.deleteObject(new DeleteObjectRequest(bucket, filePath));
+        log.info("File deleted successfully from S3 bucket: " + bucket);
+        log.info("File deleted successfully from S3 fileName: " + filePath);
     }
 
     private String getPublicUrl(String fileName) {

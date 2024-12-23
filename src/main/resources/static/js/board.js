@@ -193,7 +193,7 @@ function submitForm() {
     }
 
     // 요청 전송
-    fetchWithToken('/boards/save', {
+    fetchWithToken('/boards/api/save', {
         method: 'POST',
         body: formData,
     })
@@ -216,7 +216,7 @@ function fetchBoardDetail(boardId) {
     console.log(`Fetching details for board ID: ${boardId}`);
     const token = localStorage.getItem("token");
 
-    fetch(`/boards/${boardId}`, {
+    fetch(`/get/${boardId}`, {
         method: 'GET',
         headers: {
             "Authorization": `Bearer ${token}`,
@@ -372,7 +372,7 @@ function goBackToList() {
 function showEditForm(boardId) {
     console.log(`Editing board ID: ${boardId}`);
 
-    fetch(`/boards/${boardId}`, {
+    fetch(`/get/${boardId}`, {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -390,18 +390,6 @@ function showEditForm(boardId) {
             const board = data.board
             // 수정 폼 렌더링
             renderEditForm(board);
-
-            /*// 수정 폼 DOM 요소가 렌더링된 이후에 데이터 바인딩
-            const titleInput = document.getElementById('title');
-            const contentInput = document.getElementById('content');
-
-            if (!titleInput || !contentInput) {
-                console.error('Title or content input field not found in DOM.');
-                return;
-            }
-
-            titleInput.value = data.title;
-            contentInput.value = data.content;*/
 
             // 기존 첨부파일 로드
             if (data.board.fileMetadataList) {
@@ -599,7 +587,8 @@ function submitEditForm(boardId) {
         })
         .then(data => {
             console.log("Board updated successfully:", data);
-            goBackToList(); // 수정 완료 후 목록으로 이동
+            goBackToList(); // 게시글 목록 다시 로드
+            loadPosts();
         })
         .catch(error => {
             console.error("Error updating board:", error);

@@ -1,3 +1,4 @@
+/*
 package shop.shop.file.controller;
 
 import lombok.RequiredArgsConstructor;
@@ -55,3 +56,4 @@ public class FileController {
     }
 }
 
+*/

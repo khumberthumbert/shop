@@ -25,12 +25,12 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        /*// 인증이 필요 없는 경로 설정
+        // 인증이 필요 없는 경로 설정
         String requestURI = request.getRequestURI();
-        if (requestURI.startsWith("/boards/")) {
+        if (requestURI.startsWith("/get/")) {
             filterChain.doFilter(request, response);  // 인증 없이 그대로 다음 필터로 이동
             return;
-        }*/
+        }
         //request에서 Authorization 헤더를 찾음
         String authorization= request.getHeader("Authorization");
 
