@@ -1,3 +1,4 @@
+/*
 package shop.shop.user.config;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -19,3 +20,4 @@ public class WebConfig implements WebMvcConfigurer {
     }
 }
 
+*/

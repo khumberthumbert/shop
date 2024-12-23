@@ -214,11 +214,12 @@ function submitForm() {
 
 function fetchBoardDetail(boardId) {
     console.log(`Fetching details for board ID: ${boardId}`);
+    const token = localStorage.getItem("token");
 
     fetch(`/boards/${boardId}`, {
         method: 'GET',
         headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            "Authorization": `Bearer ${token}`,
             'Content-Type': 'application/json'
         }
     })
@@ -230,14 +231,22 @@ function fetchBoardDetail(boardId) {
         })
         .then(data => {
             console.log("Board data received:", data);
-            displayBoardDetail(data);
+            // 서버에서 받은 데이터에서 필요한 부분을 추출
+            const board = data.board; // 게시글 정보
+            const authentication = data.authentication; // 인증 정보
+            displayBoardDetail(board, authentication);
         })
         .catch(error => {
             console.error('Error fetching board details:', error);
         });
 }
 
-function displayBoardDetail(board) {
+function displayBoardDetail(board, authentication) {
+    const token = localStorage.getItem("token");
+    console.log("Board user:", board); // 인증된 사용자 이름
+    console.log("Board roles:", authentication); // 사용자의 권한 정보
+    console.log(authentication.username); // 사용자의 권한 정보
+
     // 게시글 목록 컨테이너와 상세 보기 컨테이너 가져오기
     const detailContainer = document.getElementById('board-detail-container');
 
@@ -250,6 +259,7 @@ function displayBoardDetail(board) {
 
     // 기존 리스트 숨기기
     mainInTheSection.style.display = 'none';
+    console.log("이거 뭐라고 찍히는지 보자." + board.fileMetadataList)
 
     // 첨부파일 목록 렌더링
     let attachmentsHtml = '';
@@ -263,6 +273,7 @@ function displayBoardDetail(board) {
                 return `<p>파일 정보가 올바르지 않습니다.</p>`;
             }
             console.log("File type:", file.fileType);
+            console.log("File fileUrl:", file.fileUrl);
             // 이미지 파일만 미리보기로 표시
             if (file.fileType.startsWith('image/')) {
                 return `<img src="${file.fileUrl}" alt="${file.fileName}" style="max-width: 100%; height: auto; margin-bottom: 10px;">`;
@@ -274,6 +285,19 @@ function displayBoardDetail(board) {
         </div>
     `;
     }
+
+    let updateButtonHtml = '';
+    if (token) {
+        updateButtonHtml = `
+        <div>
+            <button onclick="showEditForm(${board.id})">Update</button>
+        </div>
+        <div>
+            <button onclick="deleteBoard(${board.id})">Delete</button>
+        </div>
+        `;
+    }
+
     // 상세 정보 표시
     detailContainer.innerHTML = `
         <h2>${board.title}</h2>
@@ -284,12 +308,7 @@ function displayBoardDetail(board) {
         <div style="margin-top: 20px;">
             <button onclick="goBackToList()">Go List </button>
         </div>
-        <div>
-            <button onclick="showEditForm(${board.id})">Update</button>
-        </div>
-        <div>
-            <button onclick="deleteBoard(${board.id})">Delete</button>
-        </div>
+        ${updateButtonHtml}
     `;
 
     // 상세 보기 컨테이너 보이기
@@ -368,11 +387,11 @@ function showEditForm(boardId) {
         })
         .then(data => {
             console.log('Editing board:', data);
-
+            const board = data.board
             // 수정 폼 렌더링
-            renderEditForm(data);
+            renderEditForm(board);
 
-            // 수정 폼 DOM 요소가 렌더링된 이후에 데이터 바인딩
+            /*// 수정 폼 DOM 요소가 렌더링된 이후에 데이터 바인딩
             const titleInput = document.getElementById('title');
             const contentInput = document.getElementById('content');
 
@@ -382,11 +401,11 @@ function showEditForm(boardId) {
             }
 
             titleInput.value = data.title;
-            contentInput.value = data.content;
+            contentInput.value = data.content;*/
 
             // 기존 첨부파일 로드
-            if (data.fileMetadataList) {
-                loadExistingAttachments(data.fileMetadataList);
+            if (data.board.fileMetadataList) {
+                loadExistingAttachments(data.board.fileMetadataList);
             }
         })
         .catch(error => {
@@ -398,15 +417,16 @@ function showEditForm(boardId) {
 function renderEditForm(board) {
     const detailContainer = document.getElementById('board-detail-container');
 
+
     // 수정 폼 렌더링
     detailContainer.innerHTML = `
         <h2>Board Update</h2>
         <form id="editForm">
             <label for="title">Title</label>
-            <input type="text" id="title" name="title" required>
+            <input type="text" id="title" name="title" value="${board.title}">
 
             <label for="content">Content</label>
-            <textarea id="content" name="content" required></textarea>
+            <textarea id="content" name="content" >${board.content}</textarea>
 
             <label for="files">Add Files</label>
             <input type="file" id="files" name="files" multiple onchange="previewSelectedFiles(event)">

@@ -29,6 +29,10 @@ dependencies {
 	implementation 'org.postgresql:postgresql:42.2.23'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
+	//S3를 위함
+	implementation 'io.awspring.cloud:spring-cloud-aws-starter:3.1.1'
+	implementation 'com.amazonaws:aws-java-sdk-s3:1.12.767'
+
 	// Apache Commons IO (파일 처리 관련 유틸리티)
 	implementation 'commons-io:commons-io:2.8.0'
 

@@ -10,15 +10,20 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import shop.shop.board.dto.BoardDto;
 import shop.shop.board.service.BoardServiceImpl;
+import shop.shop.user.dto.CustomUserDetails;
 import shop.shop.user.repository.UserRepository;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/boards")
@@ -36,7 +41,9 @@ public class BoardRestController {
                                              @RequestPart(value = "files", required = false) List<MultipartFile> files) {
         // 현재 로그인된 사용자 ID 가져오기
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("authentication 뭐라나옴?" + authentication);
         String username = authentication.getName(); // 사용자 이름
+        System.out.println(username + "username 확인용");
         int userId = userRepository.findUserIdByUsername(username);
 
         // 게시글 저장
@@ -85,9 +92,23 @@ public class BoardRestController {
 
     // 게시글 단건 조회
     @GetMapping("/{boardId}")
-    public ResponseEntity<BoardDto> findBoardById(@PathVariable int boardId) {
+    public ResponseEntity<Map<String, Object>> findBoardById(@PathVariable int boardId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.info("user 가 잘 뽑힐까요? 봅시다. authentication.getName() : {} \n authentication :{}", authentication.getName(), authentication);
+
         BoardDto boardDto = boardService.findBoardById(boardId);
-        return ResponseEntity.ok(boardDto); //JSON 응답으로 반환.
+
+        // 인증 정보에서 필요한 값만 추출
+        Map<String, Object> userInfo = new HashMap<>();
+        userInfo.put("username", authentication.getName());
+        userInfo.put("roles", authentication.getAuthorities()); // 역할 정보
+
+        // 인증 정보를 Map에 담아서 반환
+        Map<String, Object> response = new HashMap<>();
+        response.put("board", boardDto); // 게시글 정보
+        response.put("authentication", userInfo); // 인증 정보
+
+        return ResponseEntity.ok(response); // JSON 응답 반환
     }
 
     // 게시글 전체 조회(페이징)
@@ -98,7 +119,6 @@ public class BoardRestController {
     }
 
     // 회원 게시글 조회(페이징)
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("/user/{userId}/page")
     public ResponseEntity<Page<BoardDto>> findAllPostPageByUserId(Pageable pageable, @PathVariable int userId) {
         Page<BoardDto> boardDtos = boardService.findAllPostPageById(pageable, userId);

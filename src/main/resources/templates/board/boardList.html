@@ -19,15 +19,25 @@
 
             <!-- 게시글 리스트 -->
             <div class="boardListContainer" id="board-list">
-                <!-- 게시글 데이터를 Thymeleaf로 렌더링 -->
-                <div th:each="board : ${boardPage.content}" class="board-item" th:onclick="'fetchBoardDetail(' + ${board.id} + ')'">
-                    <p style="display: none" th:attr="data-board-id=${board.id}"></p>
-                    <h3 th:text="${board.title}">Title</h3>
-                    <!--<p th:text="${board.content}">Content</p>-->
-                    <p>Writer: <span th:text="${board.user}"></span></p>
-                    <p>Time: <span th:text="${#temporals.format(board.displayedTime, 'yyyy-MM-dd HH:mm')}"></span></p>
-                    <hr>
-                </div>
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Writer</th>
+                        <th>Time</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- 게시글 데이터를 Thymeleaf로 렌더링 -->
+                    <tr th:each="board : ${boardPage.content}" class="board-item" th:onclick="'fetchBoardDetail(' + ${board.id} + ')'">
+                        <td th:text="${board.title}">Title</td>
+                        <td th:text="${board.user}">Writer</td>
+                        <td>
+                            <span th:text="${#temporals.format(board.displayedTime, 'yyyy-MM-dd HH:mm')}">Time</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
 
             <!-- 페이징 버튼 -->
