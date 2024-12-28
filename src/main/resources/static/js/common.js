@@ -95,14 +95,24 @@ function loadLoginForm() {
             form.setAttribute("method", "post");
 
             form.innerHTML = `
-                <div class="mb-3">
-                    <input type="text" name="username" placeholder="${data.usernamePlaceholder}" class="form-control" required>
-                </div>
-                <div class="mb-3">
-                    <input type="password" name="password" placeholder="${data.passwordPlaceholder}" class="form-control" required>
-                </div>
+    <div class="card shadow-sm" style="max-width: 400px; margin: 0 auto;" >
+        <div class="card-body">
+            <h5 class="card-title text-center mb-4">Login</h5>
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" id="username" name="username" placeholder="${data.usernamePlaceholder}" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" name="password" placeholder="${data.passwordPlaceholder}" class="form-control" required>
+            </div>
+            <div class="d-grid">
                 <button type="submit" class="btn btn-primary">${data.loginButtonText}</button>
-            `;
+            </div>
+        </div>
+    </div>
+`;
+
 
             formContainer.appendChild(form);
 

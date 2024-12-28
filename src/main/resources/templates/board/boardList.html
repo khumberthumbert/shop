@@ -2,66 +2,125 @@
 <html lang="en" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity5" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>게시글 목록</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .board-list-container {
+            width: 50%;
+            max-width: 1200px;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin: 0 15px; /* Add left and right margins */
+        }
+
+        .board-table th, .board-table td {
+            vertical-align: middle;
+        }
+
+        .board-table th {
+            background-color: #f8f9fa;
+        }
+
+        .write-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .write-button:hover {
+            background-color: #0056b3;
+        }
+
+        #pagination button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 0 5px;
+            border-radius: 5px;
+        }
+
+        #pagination button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 <body>
-<!-- templates/board/boardList.html -->
-<div id="board-list-container">
+<div class="board-list-container" id="board-list-container">
 
     <div th:fragment="boardListFragment">
         <div>
-            <h2>Product List</h2>
-
-            <!-- 글쓰기 버튼 -->
-            <div style="text-align: right; margin-bottom: 10px;" th:if="${username != 'anonymousUser'}">
-                <button class="write-button" id="writeButton" type="button" onclick="loadWriteFragment()">Board Write</button>
+            <!-- Header with Title and Write Button -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="text-left">Product List</h2>
+                <div th:if="${username != 'anonymousUser'}">
+                    <button class="write-button" id="writeButton" type="button" onclick="loadWriteFragment()">Board Write</button>
+                </div>
             </div>
 
-            <!-- 게시글 리스트 -->
-            <div class="boardListContainer" id="board-list">
-                <table>
+            <!-- Board List -->
+            <div class="board-container" id="board-list">
+                <table class="table table-striped board-table" >
                     <thead>
                     <tr>
-                        <th>Title</th>
-                        <th>Writer</th>
-                        <th>Time</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">Writer</th>
+                        <th scope="col">Time</th>
                     </tr>
                     </thead>
                     <tbody>
-                    <!-- 게시글 데이터를 Thymeleaf로 렌더링 -->
-                    <tr th:each="board : ${boardPage.content}" class="board-item" th:onclick="'fetchBoardDetail(' + ${board.id} + ')'">
+                    <tr th:each="board : ${boardPage.content}" th:onclick="'fetchBoardDetail(' + ${board.id} + ')'">
                         <td th:text="${board.title}">Title</td>
                         <td th:text="${board.user}">Writer</td>
-                        <td>
-                            <span th:text="${#temporals.format(board.displayedTime, 'yyyy-MM-dd HH:mm')}">Time</span>
-                        </td>
+                        <td th:text="${#temporals.format(board.displayedTime, 'yyyy-MM-dd HH:mm')}" class="text-nowrap">Time</td>
                     </tr>
                     </tbody>
                 </table>
             </div>
 
-            <!-- 페이징 버튼 -->
-            <div id="pagination" style="text-align: center; margin-top: 20px;">
-                <!-- 이전 버튼 -->
+            <!-- Pagination -->
+            <div id="pagination" class="text-center">
+                <!-- Previous Button -->
                 <button id="prev-button" th:attr="disabled=${boardPage.first}"
-                        th:onclick="'fetchBoardPage(' + (${boardPage.number - 1}) + ')'"><</button>
+                        th:onclick="'fetchBoardPage(' + (${boardPage.number - 1}) + ')'">&#9664; Prev</button>
 
-                <!-- 현재 페이지 정보 -->
+                <!-- Current Page Info -->
                 <span>
                 Current Page: <span id="current-page" th:text="${boardPage.number + 1}"></span> /
                 <span id="total-pages" th:text="${boardPage.totalPages}"></span>
             </span>
 
-                <!-- 다음 버튼 -->
+                <!-- Next Button -->
                 <button id="next-button" th:attr="disabled=${boardPage.last}"
-                        th:onclick="'fetchBoardPage(' + (${boardPage.number + 1}) + ')'">></button>
+                        th:onclick="'fetchBoardPage(' + (${boardPage.number + 1}) + ')'">Next &#9654;</button>
             </div>
-
 
         </div>
     </div>
 
 </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/js/board.js"></script>
 <script src="/js/common.js"></script>
 </body>

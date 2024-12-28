@@ -243,11 +243,6 @@ function fetchBoardDetail(boardId) {
 
 function displayBoardDetail(board, authentication) {
     const token = localStorage.getItem("token");
-    console.log("Board user:", board); // 인증된 사용자 이름
-    console.log("Board roles:", authentication); // 사용자의 권한 정보
-    console.log(authentication.username); // 사용자의 권한 정보
-
-    // 게시글 목록 컨테이너와 상세 보기 컨테이너 가져오기
     const detailContainer = document.getElementById('board-detail-container');
 
     if (!detailContainer) {
@@ -256,62 +251,62 @@ function displayBoardDetail(board, authentication) {
     }
 
     const mainInTheSection = document.getElementById('main-in-the-section');
+    if (mainInTheSection) {
+        mainInTheSection.style.display = 'none';
+    }
 
-    // 기존 리스트 숨기기
-    mainInTheSection.style.display = 'none';
-    console.log("이거 뭐라고 찍히는지 보자." + board.fileMetadataList)
-
-    // 첨부파일 목록 렌더링
+    // Attachments rendering
     let attachmentsHtml = '';
     if (board.fileMetadataList && board.fileMetadataList.length > 0) {
         attachmentsHtml = `
-        <h3>첨부파일</h3>
-        <div class="attachments">
-            ${board.fileMetadataList.map(file => {
+                <h5 class="mt-3" style="color: #000;">images</h5>
+                <div class="attachments">
+                    ${board.fileMetadataList.map(file => {
             if (!file.fileUrl || !file.fileType) {
                 console.warn("Invalid file metadata:", file);
-                return `<p>파일 정보가 올바르지 않습니다.</p>`;
+                return `<p class="text-danger">Invalid file information</p>`;
             }
-            console.log("File type:", file.fileType);
-            console.log("File fileUrl:", file.fileUrl);
-            // 이미지 파일만 미리보기로 표시
+
             if (file.fileType.startsWith('image/')) {
-                return `<img src="${file.fileUrl}" alt="${file.fileName}" style="max-width: 100%; height: auto; margin-bottom: 10px;">`;
+                return `<img src="${file.fileUrl}" alt="${file.fileName}" class="img-thumbnail mb-2">`;
             } else {
-                // 이미지 파일이 아닌 경우 파일 이름만 표시
-                return `<p>${file.fileName}</p>`;
+                return `<p><a href="${file.fileUrl}" target="_blank" class="text-decoration-none">${file.fileName}</a></p>`;
             }
         }).join('')}
-        </div>
-    `;
+                </div>
+            `;
     }
 
     let updateButtonHtml = '';
     if (token) {
         updateButtonHtml = `
-        <div>
-            <button onclick="showEditForm(${board.id})">Update</button>
-        </div>
-        <div>
-            <button onclick="deleteBoard(${board.id})">Delete</button>
-        </div>
-        `;
+                <div class="d-flex">
+                    <button class="btn btn-success me-2" onclick="showEditForm(${board.id})">Update</button>
+                    <button class="btn btn-danger" onclick="deleteBoard(${board.id})">Delete</button>
+                </div>
+            `;
     }
 
-    // 상세 정보 표시
+    // Set content dynamically
     detailContainer.innerHTML = `
-        <h2>${board.title}</h2>
-        <p>${board.content}</p>
-        <p><strong>Writer:</strong> ${board.user}</p>
-        <p><strong>Time:</strong> ${board.displayedTime}</p>
-        ${attachmentsHtml}
-        <div style="margin-top: 20px;">
-            <button onclick="goBackToList()">Go List </button>
-        </div>
-        ${updateButtonHtml}
-    `;
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white text-center">
+                    <h2>${board.title}</h2>
+                </div>
+                <div class="card-body" >
+                    <p style="color: #000;">${board.content}</p>
+                    <p style="color: #000;"><strong>Writer:</strong> ${board.user}</p>
+                    <p style="color: #000;"><strong>Time:</strong> ${board.displayedTime}</p>
+                    ${attachmentsHtml}
+                    <div class="d-flex justify-content-between mt-4">
+                        <button class="btn btn-secondary" onclick="goBackToList()">Go to List</button>
+                        ${updateButtonHtml}
+                    </div>
+                </div>
+            </div>
+        `;
 
-    // 상세 보기 컨테이너 보이기
+    // Show the detail container
     detailContainer.style.display = 'block';
 }
 //게시글 삭제.
@@ -405,28 +400,36 @@ function showEditForm(boardId) {
 function renderEditForm(board) {
     const detailContainer = document.getElementById('board-detail-container');
 
-
     // 수정 폼 렌더링
     detailContainer.innerHTML = `
-        <h2>Board Update</h2>
-        <form id="editForm">
-            <label for="title">Title</label>
-            <input type="text" id="title" name="title" value="${board.title}">
-
-            <label for="content">Content</label>
-            <textarea id="content" name="content" >${board.content}</textarea>
-
-            <label for="files">Add Files</label>
-            <input type="file" id="files" name="files" multiple onchange="previewSelectedFiles(event)">
-
-            <!-- 미리보기 컨테이너 추가 -->
-            <div id="previewContainer" style="margin-top: 20px;"></div>
-
-            <div style="margin-top: 20px;">
-                <button type="button" onclick="submitEditForm(${board.id})">Save</button>
-                <button type="button" onclick="goBackToList()">Cancel</button>
+        <div class="card shadow-sm mt-5">
+            <div class="card-header bg-primary text-white text-center">
+                <h2>Board Update</h2>
             </div>
-        </form>
+            <div class="card-body">
+                <form id="editForm" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" id="title" name="title" value="${board.title}" class="form-control" required>
+                        <div class="invalid-feedback">Please enter a title.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="content" class="form-label">Content</label>
+                        <textarea id="content" name="content" rows="5" class="form-control" required>${board.content}</textarea>
+                        <div class="invalid-feedback">Please enter content.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="files" class="form-label">Add Files</label>
+                        <input type="file" id="files" name="files" multiple class="form-control" onchange="previewSelectedFiles(event)">
+                    </div>
+                    <div id="previewContainer" class="d-flex flex-wrap" style="margin-top: 20px;"></div>
+                    <div class="d-flex justify-content-between mt-4">
+                        <button type="button" class="btn btn-success" onclick="submitEditForm(${board.id})">Save</button>
+                        <button type="button" class="btn btn-secondary" onclick="goBackToList()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     `;
 }
 
@@ -454,27 +457,21 @@ function previewSelectedFiles(event) {
         reader.onload = function (e) {
             // 미리보기 이미지 컨테이너 생성
             const previewDiv = document.createElement("div");
-            previewDiv.classList.add("preview-item");
-            previewDiv.style.position = "relative";
+            previewDiv.classList.add("preview-item", "position-relative", "m-2");
             previewDiv.style.display = "inline-block";
-            previewDiv.style.margin = "10px";
 
             const img = document.createElement("img");
             img.src = e.target.result;
             img.alt = file.name;
+            img.classList.add("img-thumbnail");
             img.style.maxWidth = "150px";
-            img.style.marginBottom = "10px";
 
             // "X" 버튼 생성
             const removeButton = document.createElement("button");
             removeButton.innerText = "X";
-            removeButton.style.position = "absolute";
+            removeButton.classList.add("btn", "btn-danger", "btn-sm", "position-absolute");
             removeButton.style.top = "5px";
             removeButton.style.right = "5px";
-            removeButton.style.background = "red";
-            removeButton.style.color = "white";
-            removeButton.style.border = "none";
-            removeButton.style.cursor = "pointer";
 
             removeButton.onclick = function () {
                 // 선택된 파일 제거
@@ -496,6 +493,7 @@ function previewSelectedFiles(event) {
         reader.readAsDataURL(file);
     });
 }
+
 
 // 게시글 수정 시 기존 첨부파일 로드 및 관리
 function loadExistingAttachments(attachments) {
